@@ -6,7 +6,12 @@ import java.util.Arrays;
 
 public class Project1{
 	static final int HEADER_LENGTH = 12;		//header length in bytes
+	static final String HOST = "bicycle.cs.washington.edu";
 	public static void main(String[] args){
+		JunkDrawer relay = StageA.stageA((short)555);
+		relay = StageB.stageB(relay);
+		
+		
 		/*byte[] message = "Hello".getBytes();
 		//System.out.println(message.length);
 		byte[] withHeader = prependHeader(message, message.length, "scrt".getBytes(), (short)1, (short)555);
@@ -28,11 +33,11 @@ public class Project1{
 	 * @param digits the last 3 digits of your student id number
 	 * @return a ByteBuffer consisting of a header with your message appended to it
 	 */
-	public static byte[] prependHeader(byte[] input, int len, byte[] secret, short step, short digits){
-		byte[] message = new byte[len+HEADER_LENGTH];
+	public static byte[] prependHeader(byte[] input, byte[] secret, short step, short digits){
+		byte[] message = new byte[input.length+HEADER_LENGTH];
 		ByteBuffer messageBuffer = ByteBuffer.wrap(message);
 		messageBuffer.order(ByteOrder.BIG_ENDIAN);
-		messageBuffer.putInt(len);
+		messageBuffer.putInt(input.length);
 		messageBuffer.put(secret);
 		messageBuffer.putShort(step);
 		messageBuffer.putShort(digits);
