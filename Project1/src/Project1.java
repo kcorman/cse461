@@ -1,3 +1,5 @@
+import java.io.IOException;
+import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.Socket;
 import java.nio.ByteBuffer;
@@ -8,7 +10,7 @@ public class Project1{
 	static final int HEADER_LENGTH = 12;		//header length in bytes
 	static final String HOST = "bicycle.cs.washington.edu";
 	public static void main(String[] args){
-		JunkDrawer relay = StageA.stageA((short)555);
+		JunkDrawer relay = StageA.stageA((short)780);
 		relay = StageB.stageB(relay);
 		
 		
@@ -34,15 +36,52 @@ public class Project1{
 	 * @return a ByteBuffer consisting of a header with your message appended to it
 	 */
 	public static byte[] prependHeader(byte[] input, byte[] secret, short step, short digits){
-		byte[] message = new byte[input.length+HEADER_LENGTH];
+		int alignedLen = input.length % 4 == 0 ? input.length : input.length + (4 - input.length%4);
+		//System.out.println("Msg len= "+input.length+", alignedlen= "+alignedLen);
+		byte[] message = new byte[alignedLen+HEADER_LENGTH];
 		ByteBuffer messageBuffer = ByteBuffer.wrap(message);
 		messageBuffer.order(ByteOrder.BIG_ENDIAN);
-		messageBuffer.putInt(input.length);
+		messageBuffer.putInt(alignedLen);
 		messageBuffer.put(secret);
 		messageBuffer.putShort(step);
 		messageBuffer.putShort(digits);
 		messageBuffer.put(input);
 		return messageBuffer.array();
+	}
+	
+	
+	/**
+	 * Reads a header and returns the length of the (rest of) the payload
+	 * @param s the socket to read from
+	 * @return the length of the rest of the message
+	 * @throws IOException
+	 */
+	public static int readHeaderLength(byte[] buffer) throws IOException{
+		ByteBuffer buf = ByteBuffer.wrap(buffer);
+		int len = buf.getInt()-HEADER_LENGTH;
+		byte[] secret = new byte[4];
+		buf.get(secret);
+		short step = buf.getShort();
+		short sid = buf.getShort();
+		System.out.printf("Header read: len=%d, secret=%s, step=%d, sid=%d\n",len,Arrays.toString(secret),step,sid);
+		return len;
+	}
+	
+	/**
+	 * Attempts to read len bytes from s and returns a byte buffer
+	 * @param s
+	 * @param len
+	 * @return
+	 * @throws IOException 
+	 */
+	public static ByteBuffer buildBuf(DatagramSocket s, int len) throws IOException{
+		System.out.println("Attempting to read buffer.. of len= "+len);
+		byte[] bytes = new byte[len];
+		s.receive(new DatagramPacket(bytes,bytes.length));
+		System.out.println("Read bytebuffer");
+		ByteBuffer buf = ByteBuffer.wrap(bytes);
+		buf.order(ByteOrder.BIG_ENDIAN);
+		return buf;
 	}
 }
 

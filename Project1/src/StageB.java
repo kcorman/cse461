@@ -10,23 +10,26 @@ import java.util.Set;
 
 public class StageB{
 	public static JunkDrawer stageB(JunkDrawer prev) {
-		byte[] received = new byte[16];
 		DatagramSocket ds = prev.d;
 		try {
-			ds.receive(new DatagramPacket(received, received.length));
-			System.out.println("stage 2a received: "+Arrays.toString(received));
-			ByteBuffer buf = ByteBuffer.wrap(received);
+			System.out.println("Trying to receive..");
+			ByteBuffer received = Project1.buildBuf(ds,64);
+			System.out.println("stage 2a received: "+Arrays.toString(received.array()));
+			ByteBuffer buf = received;
 			buf.order(ByteOrder.BIG_ENDIAN);
+			int offset = buf.getInt();
+			buf.position(Project1.HEADER_LENGTH);
 			int num = buf.getInt();
 			int len = buf.getInt();
 			if(len % 4 > 0) len += 4-(len % 4);
 			int udp_port = buf.getInt();
+			System.out.println("UDP port= "+udp_port);
 			byte[] secretA = new byte[4];
 			buf.get(secretA);
 			ds.close();
 			ds = new DatagramSocket();
 			ds.connect(InetAddress.getByName(Project1.HOST), udp_port);
-			Set packetIds = new HashSet<Integer>();
+			Set<Integer> packetIds = new HashSet<Integer>();
 			for(int i = 0;i<num;i++){
 				int id = -i-1;
 				packetIds.add(id);
@@ -37,11 +40,11 @@ public class StageB{
 				DatagramPacket toSend = new DatagramPacket(packet, packet.length);
 				ds.send(toSend);
 			}
-			byte[] recevied = new byte[4];
+			byte[] rec = new byte[4];
 			while(!packetIds.isEmpty()){
-				ds.receive(new DatagramPacket(received,received.length));
+				ds.receive(new DatagramPacket(rec,rec.length));
 				//populates received with data from ack
-				buf = ByteBuffer.wrap(received);
+				buf = ByteBuffer.wrap(rec);
 				buf.order(ByteOrder.BIG_ENDIAN);
 				int ack = buf.getInt();
 				packetIds.remove(ack);

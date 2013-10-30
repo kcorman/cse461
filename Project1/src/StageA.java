@@ -16,6 +16,7 @@ public class StageA{
 			short step = 1;
 			byte[] message = "hello world\0".getBytes();
 			byte[] withHeader = Project1.prependHeader(message, new byte[4], step, studentNum);
+			System.out.println("Sending: "+Arrays.toString(withHeader));
 			ds.connect(InetAddress.getByName(Project1.HOST), port);
 			DatagramPacket p = new DatagramPacket(withHeader, withHeader.length);
 			ds.send(p);
