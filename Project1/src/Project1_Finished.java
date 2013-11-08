@@ -1,4 +1,4 @@
-/* John Ellington,
+/* Jonathan Ellington,
  * Kenny Corman,
  * Dana Van Aken
  * CSE 461 Project 1
