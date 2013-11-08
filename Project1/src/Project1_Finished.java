@@ -23,7 +23,7 @@ public class Project1_Finished {
 	
 	static final short STEP1 = 1;
 	static final short STEP2 = 2;
-	static final short SID = 83;
+	static final short SID = 307;
 	
 	public static void main(String[] args) {
 		
