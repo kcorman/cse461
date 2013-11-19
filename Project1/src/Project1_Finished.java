@@ -1,3 +1,9 @@
+/* Jonathan Ellington,
+ * Kenny Corman,
+ * Dana Van Aken
+ * CSE 461 Project 1
+ */
+
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.DatagramPacket;
@@ -9,7 +15,7 @@ import java.nio.ByteBuffer;
 import java.util.Arrays;
 
 public class Project1_Finished {
-	static final int HEADER_LENGTH = 12;	//header length in bytes
+	static final int HEADER_LENGTH = 12;	// header length in bytes
 	static final String HOST = "bicycle.cs.washington.edu";
 	
 	static final String step_a_msg = "hello world\0";
@@ -17,7 +23,7 @@ public class Project1_Finished {
 	
 	static final short STEP1 = 1;
 	static final short STEP2 = 2;
-	static final short SID = 83;
+	static final short SID = 307;
 	
 	public static void main(String[] args) {
 		
@@ -25,9 +31,9 @@ public class Project1_Finished {
 		/////	STAGE A1/A2
 		//////////////////////////////////////////////
 		
-		int num, len, udp_port;
-		num = len = udp_port = -1;
-		byte[] secret_a = new byte[4];
+		int num, len, udp_port, secret_a;
+		num = len = udp_port = secret_a = -1;
+		//byte[] secret_a = new byte[4];
 		
 		try {
 			// Create socket and connect to port
@@ -35,12 +41,13 @@ public class Project1_Finished {
 			ds.connect(InetAddress.getByName(Project1_Finished.HOST), step_a_port);
 			
 			// Append header & byte-align message and send packet
-			byte[] step_a_with_header = prepend_and_align(step_a_msg.getBytes(), new byte[4], STEP1, SID);
+			byte[] step_a_with_header = prepend_and_align(step_a_msg.getBytes(), 0, STEP1, SID);
 			ds.send(new DatagramPacket(step_a_with_header, step_a_with_header.length));
 			
 			// Receive 
 			byte[] rec = new byte[HEADER_LENGTH+16];
 			ds.receive(new DatagramPacket(rec, rec.length));
+			ds.close();
 			
 			// Get num, len, udpport, and secret_a
 			ByteBuffer received = ByteBuffer.wrap(rec); 
@@ -48,9 +55,8 @@ public class Project1_Finished {
 			num = received.getInt();
 			len = received.getInt();
 			udp_port = received.getInt();
-			received.get(secret_a, 0, 4);
-			
-			System.out.println("Stage A:\tsecret_a = " + Arrays.toString(secret_a) + "\tnum = " + num + " len = " + len + " udp_port = " + udp_port);
+			secret_a = received.getInt();
+			System.out.println("Stage A:\tsecret_a = " + secret_a);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -60,8 +66,8 @@ public class Project1_Finished {
 		/////	STAGE B1/B2
 		//////////////////////////////////////////////
 		
-		int tcp_port = -1;
-		byte[] secret_b = new byte[4];
+		int tcp_port, secret_b;
+		secret_b = tcp_port = -1;
 
 		try {
 			// Set up DatagramSocket
@@ -94,13 +100,14 @@ public class Project1_Finished {
 			// Receive TCP port and secret_b
 			byte[] rec = new byte[HEADER_LENGTH+8];
 			ds.receive(new DatagramPacket(rec, rec.length));
+			ds.close();
+			
 			buf = ByteBuffer.wrap(rec);
 			buf.position(HEADER_LENGTH);
 			tcp_port = buf.getInt();
-			secret_b = new byte[4];
-			buf.get(secret_b, 0, 4);
+			secret_b = buf.getInt();
 			
-			System.out.println("Stage B:\tsecret_b = " + Arrays.toString(secret_b) + "\ttcp_port = " + tcp_port);
+			System.out.println("Stage B:\tsecret_b = " + secret_b);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -119,7 +126,7 @@ public class Project1_Finished {
 			Socket s = new Socket(InetAddress.getByName(HOST), tcp_port);
 			
 			// Read header + 13 characters for num2, len2, secretC, and char c
-			byte[] input = new byte[HEADER_LENGTH + 13];
+			byte[] input = new byte[HEADER_LENGTH+16];
 			InputStream is = s.getInputStream();
 			is.read(input);
 
@@ -128,10 +135,9 @@ public class Project1_Finished {
 			buf.position(HEADER_LENGTH);
 			int num2 = buf.getInt();
 			int len2 = buf.getInt();
-			byte[] secret_c = new byte[4];
-			buf.get(secret_c, 0, 4);
+			int secret_c = buf.getInt();
 			byte c = buf.get();
-			System.out.println("Stage C:\tsecret_c = " + Arrays.toString(secret_c) + "\tnum2 = " + num2 + " len2 = " + len2 + " c = " + c);
+			System.out.println("Stage C:\tsecret_c = " + secret_c);
 			
 			
 			/*
@@ -147,14 +153,19 @@ public class Project1_Finished {
 			
 			// Write payload num2 times
 			OutputStream os = s.getOutputStream();
-			for (int i = 0; i < num2; i++)
+			for (int i = 0; i < num2; i++) {
 				os.write(aligned_payload);
+			}
 
 			// Receive secret_d
-			byte[] secret_d = new byte[4];	// No header? (the rest is filled with zeros)
-			is.read(secret_d);
-			
-			System.out.println("Stage D:\tsecret_d = " + Arrays.toString(secret_d));
+			byte[] received = new byte[HEADER_LENGTH + 4];
+			is.read(received);
+			buf.clear();
+			buf = ByteBuffer.wrap(received);
+			buf.position(HEADER_LENGTH);
+			int secret_d = buf.getInt();
+			System.out.println("Stage D:\tsecret_d = " + secret_d);
+			s.close();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -169,13 +180,12 @@ public class Project1_Finished {
 	 * @param digits the last 3 digits of your student id number
 	 * @return a ByteBuffer consisting of a header with your message appended to it
 	 */
-	public static byte[] prepend_and_align(byte[] input, byte[] secret, short step, short digits){
+	public static byte[] prepend_and_align(byte[] input, int secret, short step, short digits){
 		int alignedLen = input.length % 4 == 0 ? input.length : input.length + (4 - input.length % 4);
-		//System.out.println("Msg len= "+input.length+", alignedlen= "+alignedLen);
 		byte[] message = new byte[alignedLen+HEADER_LENGTH];
 		ByteBuffer messageBuffer = ByteBuffer.wrap(message);
 		messageBuffer.putInt(input.length);
-		messageBuffer.put(secret);
+		messageBuffer.putInt(secret);
 		messageBuffer.putShort(step);
 		messageBuffer.putShort(digits);
 		messageBuffer.put(input);
