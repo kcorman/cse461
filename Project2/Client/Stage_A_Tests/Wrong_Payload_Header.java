@@ -14,7 +14,7 @@ import java.net.SocketTimeoutException;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 
-public class Project1_Finished {
+public class Wrong_Payload_Header {
 	static final int HEADER_LENGTH = 12;	// header length in bytes
 	static final String HOST = "localhost";
 	
@@ -23,7 +23,7 @@ public class Project1_Finished {
 	
 	static final short STEP1 = 1;
 	static final short STEP2 = 2;
-	static final short SID = 999;
+	static final short SID = 83;
 	
 	public static void main(String[] args) {
 		
@@ -41,8 +41,9 @@ public class Project1_Finished {
 			ds.connect(InetAddress.getByName(Project1_Finished.HOST), step_a_port);
 			
 			// Append header & byte-align message and send packet
-			byte[] step_a_with_header = prepend_and_align(step_a_msg.getBytes(), 0, STEP1, SID);
+			byte[] step_a_with_header = prepend_and_align(step_a_msg.getBytes(), 0, STEP2, SID);
 			ds.send(new DatagramPacket(step_a_with_header, step_a_with_header.length));
+      ds.setSoTimeout(5000);
 			
 			// Receive 
 			byte[] rec = new byte[HEADER_LENGTH+16];
@@ -185,7 +186,7 @@ public class Project1_Finished {
 		int alignedLen = input.length % 4 == 0 ? input.length : input.length + (4 - input.length % 4);
 		byte[] message = new byte[alignedLen+HEADER_LENGTH];
 		ByteBuffer messageBuffer = ByteBuffer.wrap(message);
-		messageBuffer.putInt(input.length);
+		messageBuffer.putInt(input.length + 4);
 		messageBuffer.putInt(secret);
 		messageBuffer.putShort(step);
 		messageBuffer.putShort(digits);

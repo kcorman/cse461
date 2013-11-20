@@ -14,7 +14,7 @@ import java.net.SocketTimeoutException;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 
-public class Project1_Finished {
+public class Wrong_Payload_Size {
 	static final int HEADER_LENGTH = 12;	// header length in bytes
 	static final String HOST = "localhost";
 	
@@ -23,7 +23,7 @@ public class Project1_Finished {
 	
 	static final short STEP1 = 1;
 	static final short STEP2 = 2;
-	static final short SID = 999;
+	static final short SID = 83;
 	
 	public static void main(String[] args) {
 		
@@ -38,11 +38,14 @@ public class Project1_Finished {
 		try {
 			// Create socket and connect to port
 			DatagramSocket ds = new DatagramSocket(12235, InetAddress.getByName(HOST));
-			ds.connect(InetAddress.getByName(Project1_Finished.HOST), step_a_port);
+			ds.connect(InetAddress.getByName(HOST), step_a_port);
+			ds.setSoTimeout(5000);
 			
 			// Append header & byte-align message and send packet
 			byte[] step_a_with_header = prepend_and_align(step_a_msg.getBytes(), 0, STEP1, SID);
-			ds.send(new DatagramPacket(step_a_with_header, step_a_with_header.length));
+			
+			byte[] faulty_size = new byte[step_a_with_header.length + 1];
+			ds.send(new DatagramPacket(faulty_size, faulty_size.length));
 			
 			// Receive 
 			byte[] rec = new byte[HEADER_LENGTH+16];
@@ -73,7 +76,7 @@ public class Project1_Finished {
 			// Set up DatagramSocket
 			DatagramSocket ds = new DatagramSocket();
 			ds.setSoTimeout(500);
-			ds.connect(InetAddress.getByName(Project1_Finished.HOST), udp_port);
+			ds.connect(InetAddress.getByName(HOST), udp_port);
 			
 			ByteBuffer buf = ByteBuffer.wrap(new byte[len+4]);	// buffer for sending
 			for (int i = 0; i < num; ) {
