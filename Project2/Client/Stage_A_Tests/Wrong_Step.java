@@ -38,7 +38,7 @@ public class Wrong_Step {
 		try {
 			// Create socket and connect to port
 			DatagramSocket ds = new DatagramSocket(12235, InetAddress.getByName(HOST));
-			ds.connect(InetAddress.getByName(Project1_Finished.HOST), step_a_port);
+			ds.connect(InetAddress.getByName(HOST), step_a_port);
 			
 			// Append header & byte-align message and send packet
 			byte[] step_a_with_header = prepend_and_align(step_a_msg.getBytes(), 0, STEP2, SID);
@@ -74,7 +74,7 @@ public class Wrong_Step {
 			// Set up DatagramSocket
 			DatagramSocket ds = new DatagramSocket();
 			ds.setSoTimeout(500);
-			ds.connect(InetAddress.getByName(Project1_Finished.HOST), udp_port);
+			ds.connect(InetAddress.getByName(HOST), udp_port);
 			
 			ByteBuffer buf = ByteBuffer.wrap(new byte[len+4]);	// buffer for sending
 			for (int i = 0; i < num; ) {

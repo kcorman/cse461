@@ -38,25 +38,11 @@ public class ServerThread extends Thread {
 		
 		////////////////////////////// Step a1 /////////////////////////////////////////////
 		
-		// Verify total packet length
-		if (packet.getLength() != (Main.HEADER_LEN + PAYLOAD_A.length())) {
+		ByteBuffer received = ByteBuffer.wrap(packet.getData());
+		sid = received.getShort(Main.HEADER_LEN-2);	// sizeof(short) = 2
+		if (!verifyPacket(packet.getData(), packet.getLength(), PAYLOAD_A.length(), 
+				P_SECRET, STEP1, sid, PAYLOAD_A.getBytes()))
 			return;
-		}
-		
-		// Verify header
-		byte[] received = 
-				Arrays.copyOfRange(packet.getData(), 0, Main.HEADER_LEN + PAYLOAD_A.length());
-		ByteBuffer receivedBuf = ByteBuffer.wrap(received);
-		if (receivedBuf.getInt() != PAYLOAD_A.length() || 
-			receivedBuf.getInt() != P_SECRET           ||
-			receivedBuf.getShort() != STEP1) {
-			return;
-		}
-		sid = receivedBuf.getShort();
-		if (!Arrays.equals(Arrays.copyOfRange(received, received.length - PAYLOAD_A.length(), 
-				received.length), PAYLOAD_A.getBytes())) {
-			return;
-		}
 		
 		////////////////////////////// Step a2 /////////////////////////////////////////////
 		
@@ -122,7 +108,9 @@ public class ServerThread extends Thread {
 				byte[] received = new byte[Main.MAX_PACKET_LEN];
 				packet = new DatagramPacket(received, Main.MAX_PACKET_LEN);
 				udpSocket.receive(packet);
-				if (!verifyPacket(packet, acked)) {
+				
+				byte[] exp_pay = ByteBuffer.allocate(len+4).putInt(acked).array();
+				if (!verifyPacket(packet.getData(), packet.getLength(), 4+len, secretA, STEP1, sid, exp_pay)) {
 					System.out.println("Verify packet returned false");
 					udpSocket.close();
 					return;
@@ -149,14 +137,15 @@ public class ServerThread extends Thread {
 		
 		// Set up TCP socket for part C
 		// TODO: if port is busy or something then switch to different port #
-		int tcpPort = Main.RAND.nextInt(MAX_PORT - MIN_PORT) + MIN_PORT;
+		//int tcpPort = Main.RAND.nextInt(MAX_PORT - MIN_PORT) + MIN_PORT;
 		try {
-			tcpSocket = new ServerSocket(tcpPort);
+			tcpSocket = new ServerSocket(0);	// automatically allocate port
 			tcpSocket.setSoTimeout(3000);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		
+		int tcpPort = tcpSocket.getLocalPort();
+		System.out.println("tcpPort = " + tcpPort);
 		////////////////////////////// Step b2 /////////////////////////////////////////////
 		secretB = Main.RAND.nextInt(100);
 		byte[] payload = new byte[8];
@@ -189,7 +178,8 @@ public class ServerThread extends Thread {
 			buf.order(ByteOrder.BIG_ENDIAN);
 			num2 = Main.RAND.nextInt(30);
 			System.out.println("num2 = " + num2);
-			len2 = Main.RAND.nextInt(30);
+			//len2 = Main.RAND.nextInt(30);
+			len2=35;
 			System.out.println("len2 = " + len2);
 			secretC = Main.RAND.nextInt(100);
 			System.out.println("secretC = " + secretC);
@@ -210,26 +200,15 @@ public class ServerThread extends Thread {
 					len2 : len2 + (Main.BOUNDARY - len2 % Main.BOUNDARY);
 			
 			for (int i = 0; i < num2; ++i) {
+				// Receive packet
 				byte[] received = new byte[Main.HEADER_LEN + paddedPayloadLen];
 				int bytesRead = input.read(received);
 				System.out.println("i = " + i + ", byte[] = " + Arrays.toString(received));
 				
-				// Check total packet length
-				if (bytesRead != Main.HEADER_LEN + paddedPayloadLen)
-					return;
-				buf.clear();
-				buf = ByteBuffer.wrap(received);
-				
-				// Check payload length (should not include padding)
-				if (buf.getInt() != len2)
-					return;
-				
-				// Check that all byte in payload are equal to char c
-				buf.position(Main.HEADER_LEN);
-				for (int j = 0; j < len2; ++j) {
-					if (buf.get() != c)
-						return;
-				}
+				// Verify packet
+				byte[] expected = new byte[len2];
+				Arrays.fill(expected, c);
+				verifyPacket(received, bytesRead, len2, secretC, STEP1, sid, expected);
 			}
 			
 			////////////////////////////// Step d2 /////////////////////////////////////////////
@@ -250,33 +229,48 @@ public class ServerThread extends Thread {
 		System.out.println("Finished!");
 	}
 	
-	private boolean verifyPacket(DatagramPacket packet, int packetID) {
-		int size = packet.getLength();
-		int paddingLen = len % Main.BOUNDARY == 0 ? 
-				len : len + (Main.BOUNDARY - len % Main.BOUNDARY);
-
-		// Check total packet size
-		if (size != (Main.HEADER_LEN + 4 + paddingLen)) {
-			return false;
-		}
-		ByteBuffer buf = ByteBuffer.wrap(packet.getData());
+	/**
+	 * Verifies a packet's header and payload contents
+	 * 
+	 * @param data			data received (header + payload)
+	 * @param dataLen		data buffer length
+	 * @param expPayLen		expected UNPADDED payload length (excluding header length)
+	 * @param expSecret		expected secret
+	 * @param expStep		expected step
+	 * @param expSid		expected student id
+	 * @param exp_pay		expected payload, excluding padding
+	 * 
+	 * @return true if all data matches
+	 */
+	private boolean verifyPacket(byte[] data, int dataLen, int expPayLen, 
+			int expSecret, int expStep, int expSid, byte[] expPay) {
 		
-		// Verify payload size
-		if (buf.getInt() != (len + 4)) {
+		// verify total (padded) length including header
+		int padding = expPayLen % Main.BOUNDARY == 0 ? 0 : Main.BOUNDARY - expPayLen % Main.BOUNDARY;
+		int expPadLen = Main.HEADER_LEN + expPayLen + padding;
+		if (expPadLen != dataLen)
 			return false;
-		}
 		
-		// Check packet ID and payload bytes
-		buf.position(Main.HEADER_LEN);
-		if (buf.getInt() != packetID) {
+		// Get byte buffer
+		ByteBuffer buf = ByteBuffer.wrap(data);
+		
+		// verify header contents
+		if (buf.getInt() != expPayLen	||	// unpadded payload len
+		    buf.getInt() != expSecret	||	// secret
+		    buf.getShort() != expStep	||	// step
+		    buf.getShort() != expSid)		// SID
 			return false;
-		}
 		
-		for (int i = 0; i < len; ++i) {
-			if (buf.get() != 0) {
+		// verify payload
+		for (int i = 0; i < expPayLen; i++)
+			if (buf.get() != expPay[i])
 				return false;
-			}
-		}
+		
+		// verify padding
+		for (int i = 0; i < padding; i++)
+			if (buf.get() != 0)
+				return false;
+		
 		return true;
 	}
 }
