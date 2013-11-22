@@ -14,7 +14,7 @@ import java.net.SocketTimeoutException;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 
-public class Bad_Num {
+public class Bad_Char {
 	static final int HEADER_LENGTH = 12;	// header length in bytes
 	static final String HOST = "localhost";
 	
@@ -23,7 +23,7 @@ public class Bad_Num {
 	
 	static final short STEP1 = 1;
 	static final short STEP2 = 2;
-	static final short SID = 83;
+	static final short SID = 999;
 	
 	public static void main(String[] args) {
 		
@@ -52,7 +52,7 @@ public class Bad_Num {
 			// Get num, len, udpport, and secret_a
 			ByteBuffer received = ByteBuffer.wrap(rec); 
 			received.position(HEADER_LENGTH);
-			num = received.getInt() + 10;
+			num = received.getInt();
 			len = received.getInt();
 			udp_port = received.getInt();
 			secret_a = received.getInt();
@@ -136,7 +136,7 @@ public class Bad_Num {
 			int num2 = buf.getInt();
 			int len2 = buf.getInt();
 			int secret_c = buf.getInt();
-			byte c = buf.get();
+			byte c = 0; //buf.get();
 			System.out.println("Stage C:\tsecret_c = " + secret_c);
 			
 			

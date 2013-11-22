@@ -23,7 +23,7 @@ public class Bad_Num {
 	
 	static final short STEP1 = 1;
 	static final short STEP2 = 2;
-	static final short SID = 83;
+	static final short SID = 999;
 	
 	public static void main(String[] args) {
 		
@@ -52,7 +52,7 @@ public class Bad_Num {
 			// Get num, len, udpport, and secret_a
 			ByteBuffer received = ByteBuffer.wrap(rec); 
 			received.position(HEADER_LENGTH);
-			num = received.getInt() + 10;
+			num = received.getInt();
 			len = received.getInt();
 			udp_port = received.getInt();
 			secret_a = received.getInt();
@@ -133,7 +133,7 @@ public class Bad_Num {
 			// Parse input
 			ByteBuffer buf = ByteBuffer.wrap(input);
 			buf.position(HEADER_LENGTH);
-			int num2 = buf.getInt();
+			int num2 = buf.getInt() + 1;
 			int len2 = buf.getInt();
 			int secret_c = buf.getInt();
 			byte c = buf.get();

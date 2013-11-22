@@ -21,6 +21,7 @@ public class ServerThread extends Thread {
 	private static final int MAX_PORT = 65535;
 	private static final int MIN_PORT = 256;
 	private static final String PAYLOAD_A = "hello world\0";
+	private static final int TIMEOUT = 3000; 	// ms
 	
 	private short sid;	// student ID
 	private DatagramSocket udpSocket;
@@ -75,7 +76,7 @@ public class ServerThread extends Thread {
 		// Open socket on port "port" that client will send to in part b
 		try {
 			udpSocket = new DatagramSocket(port, InetAddress.getByName(Main.HOST));
-			udpSocket.setSoTimeout(3000);
+			udpSocket.setSoTimeout(TIMEOUT);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -146,10 +147,12 @@ public class ServerThread extends Thread {
 		//int tcpPort = Main.RAND.nextInt(MAX_PORT - MIN_PORT) + MIN_PORT;
 		try {
 			tcpSocket = new ServerSocket(0);	// automatically allocate port
-			tcpSocket.setSoTimeout(3000);
+			tcpSocket.setSoTimeout(TIMEOUT);
 		} catch (Exception e) {
 			e.printStackTrace();
+			return;
 		}
+		
 		int tcpPort = tcpSocket.getLocalPort();
 		System.out.println("tcpPort = " + tcpPort);
 		////////////////////////////// Step b2 /////////////////////////////////////////////
@@ -175,6 +178,7 @@ public class ServerThread extends Thread {
 		try {
 			System.out.println("calling accept()");
 			Socket client = tcpSocket.accept();
+			client.setSoTimeout(TIMEOUT);
 			System.out.println("done calling accept()");
 			BufferedOutputStream output = new BufferedOutputStream(client.getOutputStream());
 			BufferedInputStream input = new BufferedInputStream(client.getInputStream());
@@ -184,8 +188,7 @@ public class ServerThread extends Thread {
 			buf.order(ByteOrder.BIG_ENDIAN);
 			num2 = Main.RAND.nextInt(30);
 			System.out.println("num2 = " + num2);
-			//len2 = Main.RAND.nextInt(30);
-			len2=35;
+			len2 = Main.RAND.nextInt(30);
 			System.out.println("len2 = " + len2);
 			secretC = Main.RAND.nextInt(100);
 			System.out.println("secretC = " + secretC);
@@ -205,16 +208,27 @@ public class ServerThread extends Thread {
 			int paddedPayloadLen = len2 % Main.BOUNDARY == 0 ? 
 					len2 : len2 + (Main.BOUNDARY - len2 % Main.BOUNDARY);
 			
+			byte[] received = new byte[Main.HEADER_LEN + paddedPayloadLen];
 			for (int i = 0; i < num2; ++i) {
 				// Receive packet
-				byte[] received = new byte[Main.HEADER_LEN + paddedPayloadLen];
 				int bytesRead = input.read(received);
 				System.out.println("i = " + i + ", byte[] = " + Arrays.toString(received));
 				
 				// Verify packet
 				byte[] expected = new byte[len2];
 				Arrays.fill(expected, c);
-				verifyPacket(received, bytesRead, len2, secretC, STEP1, sid, expected);
+				if (!verifyPacket(received, bytesRead, len2, secretC, STEP1, sid, expected)) {
+					System.out.println("verify packet failed, part d");
+					tcpSocket.close();
+					return;
+				}
+			}
+			
+			// Check if more packets have been sent
+			if (input.available() != 0) {
+				System.out.println("Too many packets sent");
+				tcpSocket.close();
+				return;
 			}
 			
 			////////////////////////////// Step d2 /////////////////////////////////////////////
@@ -229,9 +243,14 @@ public class ServerThread extends Thread {
 			output.flush();
 			
 			tcpSocket.close();
+		} catch (SocketTimeoutException e) {
+			System.out.println("tcp socket timeout, part d (possibly too few packets sent by client)");
+			return;
 		} catch (Exception e) {
 			e.printStackTrace();
+			return;
 		}
+
 		System.out.println("Finished!");
 	}
 	
