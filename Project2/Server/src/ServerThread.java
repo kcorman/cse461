@@ -8,6 +8,7 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketTimeoutException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.Arrays;
@@ -103,8 +104,8 @@ public class ServerThread extends Thread {
 		int acked = 0;
 		boolean droppedAck = false;
 		DatagramPacket packet =  null;
-		while (acked < num) {
-			try {
+		try {
+			while (acked < num) {
 				byte[] received = new byte[Main.MAX_PACKET_LEN];
 				packet = new DatagramPacket(received, Main.MAX_PACKET_LEN);
 				udpSocket.receive(packet);
@@ -129,10 +130,15 @@ public class ServerThread extends Thread {
 					System.out.println("Dropping ack: " + acked);
 					droppedAck = true;
 				}
-			} catch (Exception e) {
-				udpSocket.close();
-				e.printStackTrace();
-			}
+			} 
+		} catch (SocketTimeoutException e) {
+			udpSocket.close();
+			System.out.println("Client error");
+			return;
+		} catch (Exception e) {
+			udpSocket.close();
+			e.printStackTrace();
+			return;
 		}
 		
 		// Set up TCP socket for part C
