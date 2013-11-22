@@ -18,10 +18,10 @@ public class ServerThread extends Thread {
 	private static final int P_SECRET = 0;
 	private static final short STEP1 = 1;
 	private static final short STEP2 = 2;
-	private static final int MAX_PORT = 65535;
-	private static final int MIN_PORT = 256;
 	private static final String PAYLOAD_A = "hello world\0";
 	private static final int TIMEOUT = 3000; 	// ms
+	private static final int MAX_PORT = 65535;
+	private static final int MIN_PORT = 256;
 	
 	private short sid;	// student ID
 	private DatagramSocket udpSocket;
@@ -33,8 +33,9 @@ public class ServerThread extends Thread {
 	private int secretA;
 	private int secretB;
 	private int secretC;
+	private int secretD;
 	
-	public ServerThread(DatagramPacket packet, DatagramSocket ds) {
+	public ServerThread(DatagramPacket packet, DatagramSocket ds, String host) {
 		udpSocket = null;
 		tcpSocket = null;
 		
@@ -64,7 +65,7 @@ public class ServerThread extends Thread {
 		buf.putInt(secretA);
 		
 		// Send server payload
-		byte[] toSend = Main.generatePacket(P_SECRET, STEP2, sid, payload);
+		byte[] toSend = Main.generatePacket(P_SECRET, STEP2, sid, payload, payload.length);
 		DatagramPacket response = 
 				new DatagramPacket(toSend, toSend.length, packet.getAddress(), packet.getPort());
 		try {
@@ -75,11 +76,12 @@ public class ServerThread extends Thread {
 		
 		// Open socket on port "port" that client will send to in part b
 		try {
-			udpSocket = new DatagramSocket(port, InetAddress.getByName(Main.HOST));
+			udpSocket = new DatagramSocket(port, InetAddress.getByName(host));
 			udpSocket.setSoTimeout(TIMEOUT);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		System.out.println("Done with Stage A!");
 	}
 	
 	@Override
@@ -97,10 +99,6 @@ public class ServerThread extends Thread {
 		buf.putInt(secretA);
 		buf.putShort(STEP1);
 		buf.putShort(sid);
-		System.out.println("num = " + num);
-		System.out.println("len = " + len);
-		System.out.println("SecretA = " + secretA);
-		System.out.println("part b header = " + Arrays.toString(ack));
 		
 		int acked = 0;
 		boolean droppedAck = false;
@@ -121,20 +119,19 @@ public class ServerThread extends Thread {
 				// If random number is even, ack packet (33.3% chance of NOT acking)
 				boolean needToDrop = !droppedAck && acked == (num - 1);
 				if (Main.RAND.nextInt(3) % 2 == 0 && !needToDrop) {
-					System.out.println("Acking! ack = " + acked);
 					buf.position(Main.HEADER_LEN);
 					buf.putInt(acked++);
 					DatagramPacket toSend = 
 							new DatagramPacket(ack, ack.length, packet.getAddress(), packet.getPort());
 					udpSocket.send(toSend);
 				} else {
-					System.out.println("Dropping ack: " + acked);
 					droppedAck = true;
 				}
 			} 
 		} catch (SocketTimeoutException e) {
 			udpSocket.close();
 			System.out.println("Client error");
+			e.printStackTrace();
 			return;
 		} catch (Exception e) {
 			udpSocket.close();
@@ -143,8 +140,6 @@ public class ServerThread extends Thread {
 		}
 		
 		// Set up TCP socket for part C
-		// TODO: if port is busy or something then switch to different port #
-		//int tcpPort = Main.RAND.nextInt(MAX_PORT - MIN_PORT) + MIN_PORT;
 		try {
 			tcpSocket = new ServerSocket(0);	// automatically allocate port
 			tcpSocket.setSoTimeout(TIMEOUT);
@@ -154,7 +149,6 @@ public class ServerThread extends Thread {
 		}
 		
 		int tcpPort = tcpSocket.getLocalPort();
-		System.out.println("tcpPort = " + tcpPort);
 		////////////////////////////// Step b2 /////////////////////////////////////////////
 		secretB = Main.RAND.nextInt(100);
 		byte[] payload = new byte[8];
@@ -163,7 +157,7 @@ public class ServerThread extends Thread {
 		buf.order(ByteOrder.BIG_ENDIAN);
 		buf.putInt(tcpPort);
 		buf.putInt(secretB);
-		byte[] finalB = Main.generatePacket(secretA, STEP2, sid, payload);
+		byte[] finalB = Main.generatePacket(secretA, STEP2, sid, payload, payload.length);
 		try {
 			DatagramPacket finalPacketB = 
 					new DatagramPacket(finalB, finalB.length, packet.getAddress(), packet.getPort());
@@ -173,13 +167,12 @@ public class ServerThread extends Thread {
 			e.printStackTrace();
 		}
 		udpSocket.close();
+		System.out.println("Done with Stage B!");
 
 		////////////////////////////// Step c2 /////////////////////////////////////////////
 		try {
-			System.out.println("calling accept()");
 			Socket client = tcpSocket.accept();
 			client.setSoTimeout(TIMEOUT);
-			System.out.println("done calling accept()");
 			BufferedOutputStream output = new BufferedOutputStream(client.getOutputStream());
 			BufferedInputStream input = new BufferedInputStream(client.getInputStream());
 			byte[] c1Payload = new byte[16];
@@ -187,23 +180,18 @@ public class ServerThread extends Thread {
 			buf = ByteBuffer.wrap(c1Payload);
 			buf.order(ByteOrder.BIG_ENDIAN);
 			num2 = Main.RAND.nextInt(30);
-			System.out.println("num2 = " + num2);
 			len2 = Main.RAND.nextInt(30);
-			System.out.println("len2 = " + len2);
 			secretC = Main.RAND.nextInt(100);
-			System.out.println("secretC = " + secretC);
 			byte c = (byte) (Main.RAND.nextInt(94) + 33);	// includes punctuation, numbers, letters
-			System.out.println("c = " + (char)c);
 			buf.putInt(num2);
 			buf.putInt(len2);
 			buf.putInt(secretC);
 			buf.put(c);
-			System.out.println("c payload = " + Arrays.toString(c1Payload));
-			byte[] c1Packet = Main.generatePacket(secretB, STEP2, sid, c1Payload);
-			System.out.println("c packet = " + Arrays.toString(c1Packet));
+			byte[] c1Packet = Main.generatePacket(secretB, STEP2, sid, c1Payload, 13);
 			output.write(c1Packet);
 			output.flush();
-			
+			System.out.println("Done with Stage C!");
+	
 			//////////////////////////////Step d1 /////////////////////////////////////////////
 			int paddedPayloadLen = len2 % Main.BOUNDARY == 0 ? 
 					len2 : len2 + (Main.BOUNDARY - len2 % Main.BOUNDARY);
@@ -212,7 +200,6 @@ public class ServerThread extends Thread {
 			for (int i = 0; i < num2; ++i) {
 				// Receive packet
 				int bytesRead = input.read(received);
-				System.out.println("i = " + i + ", byte[] = " + Arrays.toString(received));
 				
 				// Verify packet
 				byte[] expected = new byte[len2];
@@ -232,17 +219,17 @@ public class ServerThread extends Thread {
 			}
 			
 			////////////////////////////// Step d2 /////////////////////////////////////////////
-			int secretD = Main.RAND.nextInt(100);
+			secretD = Main.RAND.nextInt(100);
 			byte[] finalD = new byte[4];
 			buf.clear();
 			buf = ByteBuffer.wrap(finalD);
 			buf.order(ByteOrder.BIG_ENDIAN);
 			buf.putInt(secretD);
-			byte[] finalPacketD = Main.generatePacket(secretC, STEP2, sid, finalD);
+			byte[] finalPacketD = Main.generatePacket(secretC, STEP2, sid, finalD, finalD.length);
 			output.write(finalPacketD);
-			output.flush();
-			
+			output.flush();	
 			tcpSocket.close();
+			System.out.println("Done with Stage D!\n");
 		} catch (SocketTimeoutException e) {
 			System.out.println("tcp socket timeout, part d (possibly too few packets sent by client)");
 			return;
@@ -252,6 +239,10 @@ public class ServerThread extends Thread {
 		}
 
 		System.out.println("Finished!");
+		System.out.println("Secret A = " + secretA);
+		System.out.println("Secret B = " + secretB);
+		System.out.println("Secret C = " + secretC);
+		System.out.println("Secret D = " + secretD);
 	}
 	
 	/**
