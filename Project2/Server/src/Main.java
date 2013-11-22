@@ -6,6 +6,12 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.Random;
 
+/*
+ * Kenny Corman, 1250780
+ * Jon Ellington, 1164083
+ * Dana Van Aken, 1250307
+ */
+
 
 public class Main {
 	public static final int HEADER_LEN = 12;

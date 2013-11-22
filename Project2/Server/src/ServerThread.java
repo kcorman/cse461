@@ -13,6 +13,11 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.Arrays;
 
+/*
+ * Kenny Corman, 1250780
+ * Jon Ellington, 1164083
+ * Dana Van Aken, 1250307
+ */
 
 public class ServerThread extends Thread {
 	private static final int P_SECRET = 0;
