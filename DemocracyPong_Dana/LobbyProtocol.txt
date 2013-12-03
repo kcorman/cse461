@@ -1,0 +1,16 @@
+1. Server connects to known host and port via TCP.
+2. Client connects to Server on known host and port.
+3. Client sends 2 pieces of info to the Server:
+   [1] The request to host (0), join a random room (1), or join a specific room (2)
+   [2] If client requests to join a specific game, send the specific room number, else send (0)
+4. Server responds with 3 pieces of info to the Client:
+   [1] The Client's user ID
+   [2] Whether the Client is hosting a game (0), joined a random room (1), or joined a specific room (2)
+   [3] The ID of the room that the Client is in
+5. Each time a new user is added to the same room as this Client, the Server sends:
+   [1] Whether this is an UPDATE or whether the room is READY
+    -  If it's an UPDATE, the Server additionally sends:
+         [1] the number of users in the room that the Client is in
+         [2] the host ID (also used as the table ID)
+         [3] the user IDs of all other users in that room (including the client's)
+   
