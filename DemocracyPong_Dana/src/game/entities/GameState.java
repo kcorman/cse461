@@ -18,12 +18,12 @@ import java.nio.ByteBuffer;
 public class GameState {
 	private static final int NUM_INTS = 10;		//should store the number of ints in an instance,
 	// Ball related fields
-	int ballX, ballY, ballDx, ballDy;
+	public int ballX, ballY, ballDx, ballDy;
 	//Paddle related fields
-	int leftPaddleY, rightPaddleY;
-	int paddleHeight, paddleWidth;
+	public int leftPaddleY, rightPaddleY;
+	public int paddleHeight, paddleWidth;
 	//Score related fields
-	int leftScore, rightScore;
+	public int leftScore, rightScore;
 	
 	
 	/**
@@ -32,7 +32,8 @@ public class GameState {
 	 */
 	public GameState(){
 		/* all values initialized to zero, this should probably be changed */
-		
+		paddleWidth = 20;
+		paddleHeight = 64;
 	}
 	
 	
@@ -145,6 +146,61 @@ public class GameState {
 				+ ", paddleHeight=" + paddleHeight + ", paddleWidth="
 				+ paddleWidth + ", leftScore=" + leftScore + ", rightScore="
 				+ rightScore + "]";
+	}
+
+
+	public static int getNumInts() {
+		return NUM_INTS;
+	}
+
+
+	public int getBallX() {
+		return ballX;
+	}
+
+
+	public int getBallY() {
+		return ballY;
+	}
+
+
+	public int getBallDx() {
+		return ballDx;
+	}
+
+
+	public int getBallDy() {
+		return ballDy;
+	}
+
+
+	public int getLeftPaddleY() {
+		return leftPaddleY;
+	}
+
+
+	public int getRightPaddleY() {
+		return rightPaddleY;
+	}
+
+
+	public int getPaddleHeight() {
+		return paddleHeight;
+	}
+
+
+	public int getPaddleWidth() {
+		return paddleWidth;
+	}
+
+
+	public int getLeftScore() {
+		return leftScore;
+	}
+
+
+	public int getRightScore() {
+		return rightScore;
 	}
 	
 }
