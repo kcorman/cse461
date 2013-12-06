@@ -1,3 +1,4 @@
+import java.awt.Dimension;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -16,17 +17,19 @@ public class ClientMain {
 		
 		JFrame frame = new JFrame("Democracy Pong Lobby");
 	    frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+	    frame.setPreferredSize(new Dimension(800, 600));
 	    RoomPanel panel = new RoomPanel();
 	    frame.add(panel);
 	    frame.pack();
 	    frame.setVisible(true);
+	    frame.repaint();
 	    
-	    List<String> player = new ArrayList<String>();
-	    player.add("10");
-	    player.add("4");
-	    player.add("8");
-	    player.add("6");
-	    player.add("11");
-	    panel.notifyViewer(player, "8");
+//	    List<String> player = new ArrayList<String>();
+//	    player.add("10");
+//	    player.add("4");
+//	    player.add("8");
+//	    player.add("6");
+//	    player.add("11");
+//	    panel.notifyViewer(player, "8");
 	}
 }
