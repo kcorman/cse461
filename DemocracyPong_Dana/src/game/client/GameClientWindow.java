@@ -5,6 +5,7 @@ import game.entities.GameState;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.Image;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
 
@@ -15,17 +16,27 @@ public class GameClientWindow extends JFrame implements MouseMotionListener, Gam
 	private GameClientModel model;
 	int mouseX, mouseY;
 	
+	Image dbImage;
+	
 	public GameClientWindow(GameClientModel m){
 		this.setPreferredSize(DEFAULT_SIZE);
 		this.setDefaultCloseOperation(EXIT_ON_CLOSE);
 		this.setVisible(true);
 		this.pack();
 		this.addMouseMotionListener(this);
+		dbImage = this.createImage(getWidth(), getHeight());
 		model = m;
 	}
 	
 	@Override
 	public void paint(Graphics g){
+		if(dbImage != null){
+			dbPaint(dbImage.getGraphics());
+			g.drawImage(dbImage,0,0,null);
+		}
+	}
+	
+	public void dbPaint(Graphics g){
 		super.paint(g);
 		//if(model == null) return;
 		g.setColor(Color.BLACK);

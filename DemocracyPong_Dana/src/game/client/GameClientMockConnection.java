@@ -5,6 +5,8 @@ import game.entities.GameState;
 import java.util.concurrent.Executors;
 
 public class GameClientMockConnection implements GameClientConnection, Runnable{
+	static final double MAX_BOUNCE_ANGLE = 3*Math.PI/4;
+	double BALL_SPEED = 25;
 	GameMousePositionSource src;
 	GameClientModel m;
 	//AI fields
@@ -12,6 +14,10 @@ public class GameClientMockConnection implements GameClientConnection, Runnable{
 	boolean goingUp = false;
 	double aiNoise = .9;
 	//
+	int serveCounter = 20; //positive number indicates waiting to serve
+	boolean isServing = false;
+	
+	
 	public GameClientMockConnection(GameMousePositionSource src, GameClientModel m){
 		this.src = src;
 		this.m = m;
@@ -28,6 +34,8 @@ public class GameClientMockConnection implements GameClientConnection, Runnable{
 			updateBall();
 			updateOpponent();
 			m.getState().leftPaddleY = src.getMouseY();//+noise();
+			//serialize and deserialize state to test functionality
+			m.setState(GameState.fromBytes(m.getState().toBytes()));
 			try {
 				Thread.sleep(50);
 			} catch (InterruptedException e) {
@@ -47,6 +55,10 @@ public class GameClientMockConnection implements GameClientConnection, Runnable{
 	 * Updates the ball in the game state
 	 */
 	public void updateBall(){
+		if(isServing){
+			serveBall();
+			return;
+		}
 		GameState s = m.getState();
 		if(s.ballY > s.lowerBoundsY){
 			s.ballY = s.lowerBoundsY - GameState.BALL_SIZE;
@@ -57,10 +69,16 @@ public class GameClientMockConnection implements GameClientConnection, Runnable{
 		}
 		//check for paddle collision or miss
 		if(s.ballX < s.leftPaddleX+s.paddleWidth){
-			if(s.ballY > s.leftPaddleY && s.ballY < s.leftPaddleY + s.paddleHeight){
+			if(s.ballY+GameState.BALL_SIZE > s.leftPaddleY && s.ballY < s.leftPaddleY + s.paddleHeight){
 				//bounce off left paddle
-				s.ballDx *= -1;
+				//s.ballDx *= -1;
 				s.ballX = s.leftPaddleX+s.paddleWidth;
+				int relativeIntersectY = (s.leftPaddleY+(s.paddleHeight/2)) - (s.ballY+GameState.BALL_SIZE/2);
+				//normalize
+				double normalized = ((double)relativeIntersectY)/s.paddleHeight;
+				double angle = normalized * MAX_BOUNCE_ANGLE;
+				s.ballDx = (int)Math.abs(BALL_SPEED *Math.cos(angle));
+				s.ballDy = (int)(BALL_SPEED *-Math.sin(angle));
 			}
 			else{
 				s.rightScore++;
@@ -69,10 +87,15 @@ public class GameClientMockConnection implements GameClientConnection, Runnable{
 		}
 		
 		if(s.ballX+GameState.BALL_SIZE > s.rightPaddleX){
-			if(s.ballY > s.rightPaddleY && s.ballY < s.rightPaddleY + s.paddleHeight){
+			if(s.ballY+GameState.BALL_SIZE > s.rightPaddleY && s.ballY < s.rightPaddleY + s.paddleHeight){
 				//bounce off right paddle
-				s.ballDx *= -1;
 				s.ballX = s.rightPaddleX-GameState.BALL_SIZE;
+				int relativeIntersectY = (s.leftPaddleY+(s.paddleHeight/2)) - (s.ballY+GameState.BALL_SIZE/2);
+				//normalize
+				double normalized = ((double)relativeIntersectY)/s.paddleHeight;
+				double angle = normalized * MAX_BOUNCE_ANGLE;
+				s.ballDx = (int)-Math.abs((BALL_SPEED *Math.cos(angle)));
+				s.ballDy = (int)(BALL_SPEED *-Math.sin(angle));
 			}else{
 				s.leftScore++;
 				serveBall();
@@ -85,10 +108,30 @@ public class GameClientMockConnection implements GameClientConnection, Runnable{
 	
 	public void serveBall(){
 		GameState s = m.getState();
-		s.ballDx = 20;
-		s.ballDy = 20;
-		s.ballX = s.leftPaddleX;
-		s.ballY= s.leftPaddleY;
+		/*
+		 * Stuff related to waiting before serving
+		 */
+		if(!isServing){
+			isServing = true;
+			//Just started serving
+			serveCounter = 20;
+			s.ballX = -50;	//offscreen
+			s.ballDx = 0;
+			s.ballDy = 0;
+			return;
+		}
+		//tick counter down
+		if(isServing && serveCounter > 0){
+			serveCounter--;
+			return;
+		}
+		//actual logic
+		s.ballDx = (int)(BALL_SPEED * Math.sin(Math.PI/4));
+		s.ballDy = (int)(BALL_SPEED * Math.cos(Math.PI/4));
+		s.ballX = s.leftPaddleX+GameState.BALL_SIZE;
+		s.ballY= s.upperBoundsY;
+		serveCounter--;
+		isServing = false;
 	}
 	
 	public void updateOpponent(){
