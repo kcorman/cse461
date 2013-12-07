@@ -16,14 +16,17 @@ import java.nio.ByteBuffer;
  * 
  */
 public class GameState {
-	private static final int NUM_INTS = 10;		//should store the number of ints in an instance,
+	private static final int NUM_INTS = 14;		//should store the number of ints in an instance,
+	public static final int BALL_SIZE = 24;		//ball width and height
 	// Ball related fields
 	public int ballX, ballY, ballDx, ballDy;
 	//Paddle related fields
-	public int leftPaddleY, rightPaddleY;
+	public int leftPaddleY, leftPaddleX, rightPaddleY, rightPaddleX;
 	public int paddleHeight, paddleWidth;
 	//Score related fields
 	public int leftScore, rightScore;
+	//Boundary Y coordinates (X boundaries are behind respective paddles)
+	public int upperBoundsY, lowerBoundsY;
 	
 	
 	/**
@@ -33,7 +36,11 @@ public class GameState {
 	public GameState(){
 		/* all values initialized to zero, this should probably be changed */
 		paddleWidth = 20;
-		paddleHeight = 64;
+		paddleHeight = 128;
+		leftPaddleX = 10;	//arbitrary
+		rightPaddleX = 750;	//arbitrary, but based on the size of the game board
+		lowerBoundsY = 550;
+		upperBoundsY = 50;
 	}
 	
 	
@@ -50,11 +57,15 @@ public class GameState {
 		s.ballDx = buf.getInt();
 		s.ballDy = buf.getInt();
 		s.leftPaddleY = buf.getInt();
+		s.leftPaddleX = buf.getInt();
 		s.rightPaddleY = buf.getInt();
+		s.rightPaddleX = buf.getInt();
 		s.paddleHeight = buf.getInt();
 		s.paddleWidth = buf.getInt();
 		s.leftScore = buf.getInt();
 		s.rightScore = buf.getInt();
+		s.upperBoundsY = buf.getInt();
+		s.lowerBoundsY = buf.getInt();
 		return s;
 	}
 	
@@ -71,11 +82,15 @@ public class GameState {
 		buf.putInt(ballDx);
 		buf.putInt(ballDy);
 		buf.putInt(leftPaddleY);
+		buf.putInt(leftPaddleX);
 		buf.putInt(rightPaddleY);
+		buf.putInt(rightPaddleX);
 		buf.putInt(paddleHeight);
 		buf.putInt(paddleWidth);
 		buf.putInt(leftScore);
 		buf.putInt(rightScore);
+		buf.putInt(upperBoundsY);
+		buf.putInt(lowerBoundsY);
 		return array;
 	}
 	
@@ -181,6 +196,15 @@ public class GameState {
 
 	public int getRightPaddleY() {
 		return rightPaddleY;
+	}
+	
+	public int getLeftPaddleX() {
+		return leftPaddleX;
+	}
+
+
+	public int getRightPaddleX() {
+		return rightPaddleX;
 	}
 
 

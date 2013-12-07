@@ -32,14 +32,20 @@ public class GameClientWindow extends JFrame implements MouseMotionListener, Gam
 		g.fillRect(0, 0, getWidth(), getHeight());
 		g.setColor(Color.white);
 		GameState s = model.getState();
+		//Draw scores
 		g.drawString("Score: "+s.getLeftScore(), 25, 45);
 		g.drawString("Score: "+s.getRightScore(), getWidth()-75, 45);
+		//Draw real paddles
 		g.fillRect(0, s.getLeftPaddleY(), s.getPaddleWidth(), s.getPaddleHeight());
-		g.fillRect(getWidth()-s.getPaddleWidth(), s.getRightPaddleY(), 
+		g.fillRect(s.getRightPaddleX(), s.getRightPaddleY(), 
 				s.getPaddleWidth(), s.getPaddleHeight());
 		g.setColor(Color.yellow);
-		g.drawRect(0, mouseY, s.getPaddleWidth(), s.getPaddleHeight());
-		//g.fillRect((int)(Math.random()*1000), 200, 64, 64);
+		//draw local paddle
+		int localPaddleX = model.isOnLeftSide() ? s.leftPaddleX : s.rightPaddleX;
+		g.drawRect(localPaddleX, mouseY, s.getPaddleWidth(), s.getPaddleHeight());
+		//draw ball
+		g.setColor(Color.white);
+		g.fillRect(s.ballX, s.ballY, GameState.BALL_SIZE, GameState.BALL_SIZE);
 	}
 	@Override
 	public void mouseDragged(MouseEvent arg0) {
