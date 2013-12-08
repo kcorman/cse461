@@ -5,7 +5,12 @@ import java.nio.ByteBuffer;
 /**
  * 
  * @author kenny
- * A container for the fields that the client must communicate to the server
+ * A container for the fields that the client must communicate to the server.
+ * 
+ * yVote is also used to determine timeouts and disconnect signals.  The following
+ * is a list of special votes:
+ *   -1: timeout
+ *   -2: disconnect
  */
 public class ClientState {
 	public int userId;
