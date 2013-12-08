@@ -1,8 +1,10 @@
 package game.server;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Queue;
 
+import lobby.User;
 import game.entities.ClientState;
 import game.entities.GameState;
 
@@ -13,6 +15,7 @@ import game.entities.GameState;
  */
 public abstract class StateUpdater {
 	GameState state;
+	Map<Integer, User> players;
 	Queue<ClientState> votes;
 	boolean running;
 
@@ -26,24 +29,13 @@ public abstract class StateUpdater {
 	abstract public Queue<ClientState> getVotes();
 	
 	/**
-	 * Gets a single client state.  Has no effect if the updater
-	 * is running (ie after a call to start())
-	 * @modifies votes adds a single client state to votes if running==false
-	 */
-	abstract public void getClientState();
-	
-	/**
-	 * Sends state to clients  Has no effect if the updater is
-	 * running (ie after a call to start())
-	 * @effects sends the current state to clients if running==false
-	 */
-	abstract public void sendGameState();
-	
-	/**
 	 * Start the StateUpdater.  After calling start(),
 	 * the votes queue will automatically be populated and the 
 	 * current GameState will automatically be sent to the client.
-	 * @modifies running sets running = true
+	 * 
+	 * A call to start() is ignored if start() has previously been called
+	 * without first calling stop().
+	 * @modifies running if running = false, sets running = true
 	 */
 	abstract public void start();
 	
