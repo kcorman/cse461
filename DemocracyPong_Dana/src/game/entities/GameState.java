@@ -39,8 +39,8 @@ public class GameState {
 		paddleHeight = 128;
 		leftPaddleX = 10;	//arbitrary
 		rightPaddleX = 750;	//arbitrary, but based on the size of the game board
-		lowerBoundsY = 550;
-		upperBoundsY = 50;
+		lowerBoundsY = 50;
+		upperBoundsY = 550;
 	}
 	
 	
