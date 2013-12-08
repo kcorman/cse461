@@ -6,6 +6,7 @@ import game.entities.GameState;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
+import java.util.Random;
 
 import lobby.User;
 
@@ -14,32 +15,48 @@ import lobby.User;
  * @author Jon
  */
 public class Game implements Runnable {
+	// Game management
 	public enum Team { LEFT, RIGHT };
-	static final double MAX_BOUNCE_ANGLE = 3*Math.PI/4;	// Should go in GameState
-	double BALL_SPEED = 25; // should go in GameState
-	int serveCounter = 20;	// probably replace this with some kind of sleep()
+	public static final int TIMEOUT = -1, DISCONNECT = -2;
+	public static final int MAX_TIMEOUTS = 3;
+	
+	// Related to ball logic
+	static final double MAX_BOUNCE_ANGLE = 3*Math.PI/4;
+	static final double BALL_SPEED = 25;
+	static final int SERVE_TIME = 100;			// in ms
+	static final int BALL_UPDATE_TIME = 100;	// in ms
 	private boolean isServing;
 	
-	private GameState state;			// state != null
-	private Map<Integer, User> players;	// players != null
-	private StateUpdater updater;		// can be null
-	
+	// Data
+	private Map<Integer, User> players;
+	private GameState state;
+	private StateUpdater updater;
+
 	public Game(Map<Integer, User> p) {
 		if (p == null)
 			throw new NullPointerException();
 		
 		players = p;
-    	state = new GameState();
+		updater = new MockStateUpdater(p);
+		state = new GameState();
     	isServing = true;
 	}
 	
 	@Override
 	public void run() {
-		updater.start();
 		
+		int i =0;
 		while (true) {
 			updateBall();
 			updatePaddles();
+			if (++i > 20)
+				updater.start();
+			try {
+				Thread.sleep(BALL_UPDATE_TIME);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 	}
 	
@@ -55,25 +72,26 @@ public class Game implements Runnable {
 			return;
 		}
 		GameState s = state;
-		if(s.ballY > s.lowerBoundsY){
-			s.ballY = s.lowerBoundsY - GameState.BALL_SIZE;
+		if(s.ballY > s.upperBoundsY){
+			s.ballY = s.upperBoundsY - GameState.BALL_SIZE;
 			s.ballDy *= -1;
-		}else if(s.ballY < s.upperBoundsY){
-			s.ballY = s.upperBoundsY;
+		}else if(s.ballY < s.lowerBoundsY){
+			s.ballY = s.lowerBoundsY;
 			s.ballDy *= -1;
 		}
 		//check for paddle collision or miss
 		if(s.ballX < s.leftPaddleX+s.paddleWidth){
 			if(s.ballY+GameState.BALL_SIZE > s.leftPaddleY && s.ballY < s.leftPaddleY + s.paddleHeight){
 				//bounce off left paddle
-				//s.ballDx *= -1;
+				s.ballDx *= -1;
 				s.ballX = s.leftPaddleX+s.paddleWidth;
 				int relativeIntersectY = (s.leftPaddleY+(s.paddleHeight/2)) - (s.ballY+GameState.BALL_SIZE/2);
 				//normalize
 				double normalized = ((double)relativeIntersectY)/s.paddleHeight;
 				double angle = normalized * MAX_BOUNCE_ANGLE;
-				s.ballDx = (int)Math.abs(BALL_SPEED *Math.cos(angle));
-				s.ballDy = (int)(BALL_SPEED *-Math.sin(angle));
+				// s.ballDx = (int)Math.abs(BALL_SPEED *Math.cos(angle));
+				// s.ballDy = (int)(BALL_SPEED *-Math.sin(angle));
+				s.ballDy = (int) (normalized * BALL_SPEED);
 			}
 			else{
 				s.rightScore++;
@@ -84,18 +102,21 @@ public class Game implements Runnable {
 		if(s.ballX+GameState.BALL_SIZE > s.rightPaddleX){
 			if(s.ballY+GameState.BALL_SIZE > s.rightPaddleY && s.ballY < s.rightPaddleY + s.paddleHeight){
 				//bounce off right paddle
+				s.ballDx *= -1;
 				s.ballX = s.rightPaddleX-GameState.BALL_SIZE;
 				int relativeIntersectY = (s.leftPaddleY+(s.paddleHeight/2)) - (s.ballY+GameState.BALL_SIZE/2);
 				//normalize
 				double normalized = ((double)relativeIntersectY)/s.paddleHeight;
 				double angle = normalized * MAX_BOUNCE_ANGLE;
-				s.ballDx = (int)-Math.abs((BALL_SPEED *Math.cos(angle)));
-				s.ballDy = (int)(BALL_SPEED *-Math.sin(angle));
+				// s.ballDx = (int)-Math.abs((BALL_SPEED *Math.cos(angle)));
+				// s.ballDy = (int)(BALL_SPEED *-Math.sin(angle));
+				s.ballDy = (int) (normalized * BALL_SPEED);
 			}else{
 				s.leftScore++;
 				serveBall();
 			}
 		}
+		
 		s.ballX += s.ballDx;
 		s.ballY += s.ballDy;
 		
@@ -106,26 +127,30 @@ public class Game implements Runnable {
 		/*
 		 * Stuff related to waiting before serving
 		 */
-		if(!isServing){
-			isServing = true;
-			//Just started serving
-			serveCounter = 20;
-			s.ballX = -50;	//offscreen
-			s.ballDx = 0;
-			s.ballDy = 0;
-			return;
+		isServing = true;
+		
+		s.ballX = -50;	//offscreen
+		s.ballDx = 0;
+		s.ballDy = 0;
+		
+		try {
+			Thread.sleep(SERVE_TIME);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
 		}
-		//tick counter down
-		if(isServing && serveCounter > 0){
-			serveCounter--;
-			return;
-		}
+
 		//actual logic
-		s.ballDx = (int)(BALL_SPEED * Math.sin(Math.PI/4));
-		s.ballDy = (int)(BALL_SPEED * Math.cos(Math.PI/4));
-		s.ballX = s.leftPaddleX+GameState.BALL_SIZE;
-		s.ballY= s.upperBoundsY;
-		serveCounter--;
+		Random rgen = new Random();
+		int xDir = rgen.nextInt(2);
+		int yDir = rgen.nextInt(2);
+		xDir = (xDir == 0) ? -1 : 1;
+		yDir = (yDir == 0) ? -1 : 1;
+		
+		//s.ballDx = (int)(BALL_SPEED * Math.sin(Math.PI/4)) * xDir;
+		s.ballDx = (int) BALL_SPEED * xDir;
+		s.ballDy = 0;//(int)(BALL_SPEED * Math.cos(Math.PI/4)) * yDir;
+		s.ballX = (s.leftPaddleX + s.rightPaddleX)/2;
+		s.ballY= (s.upperBoundsY + s.lowerBoundsY)/2;
 		isServing = false;
 	}
 	
@@ -142,28 +167,42 @@ public class Game implements Runnable {
 		if (updater == null) 
 			return; 	// do nothing, ie keep default votes
 
-		updateUserVotes(updater.getVotes());
+		updateUsers(updater.getVotes());
 		
-		int leftVote = 0;
-		int rightVote = 0;
+		int leftVote = 0, rightVote = 0;
+		int leftNum = 0, rightNum = 0;
 		for (User p : players.values()) {
-			if (p.getTeam() == Game.Team.LEFT)
+			if (p.getTeam() == Game.Team.LEFT) {
 				leftVote += p.getVote();
-			else
+				leftNum++;
+			}
+			else {
 				rightVote += p.getVote();
+				rightNum++;
+			}
 		}
 		
-		state.leftPaddleY = leftVote;
-		state.rightPaddleY = rightVote;
+		state.leftPaddleY = leftVote/leftNum;
+		state.rightPaddleY = rightVote/rightNum;
 	}
 	
 	/**
-	 * Updates the votes for users in s
-	 * @param s queue holding the users whose votes are to be updated
+	 * Updates the votes for users in q.  Removes users who have
+	 * more than the max number of timeouts, or if the user sends
+	 * a disconnect signal.
+	 * @param q queue holding the users whose votes are to be updated
+	 * @modifies players removes any user who has too many timeouts
 	 */
-	private void updateUserVotes(Queue<ClientState> q) {
+	private void updateUsers(Queue<ClientState> q) {
 		for (ClientState cs : q) {
 			User currUser = players.get(cs.userId);
+			if (cs.yVote < 0) {
+				// Remove user if they timeout or send disconnect signal
+				int timeouts = currUser.incTimeouts();
+				if (timeouts > MAX_TIMEOUTS || cs.yVote == DISCONNECT)
+					players.remove(cs.userId);
+			}
+				players.remove(cs.userId);
 			currUser.setVote(cs.yVote);
 		}
 	}
