@@ -16,27 +16,49 @@ import lobby.User;
  * A StateUpdater that interfaces with Clients via Sockets.
  */
 public class SocketStateUpdater extends StateUpdater implements Runnable {
-	private GameState state;
-	private Queue<ClientState> votes = new LinkedList<ClientState>();
 	
-	public SocketStateUpdater(GameState state, Map<Integer, User> players) {
-		this.state = state;
+	/**
+	 * Creates a new SocketStateUpdater
+	 * @param state reference to a GameState
+	 */
+	public SocketStateUpdater(Game g) {
+		this.state = g.getState();
+		g.setStateUpdater(this);
 	}
 	
 	@Override
 	public void run() {
-
+		while (running) {
+			
+		}
 	}
 
 	@Override
-	Queue<ClientState> getClientState() {
+	public Queue<ClientState> getVotes() {
 		// TODO Auto-generated method stub
 		return null;
 	}
-
+	
 	@Override
-	void sendGameState() {
+	public void getClientState() {
+		// TODO Auto-generated method stub
+	}
+	
+	@Override
+	public void sendGameState() {
 		// TODO Auto-generated method stub
 		
 	}
+
+	@Override
+	public void start() {
+		running = true;
+		(new Thread(this)).start();
+	}
+
+	@Override
+	public void stop() {
+		running = false;
+	}
+
 }

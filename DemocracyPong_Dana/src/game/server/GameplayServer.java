@@ -24,11 +24,12 @@ public class GameplayServer implements Runnable {
 
 	}
 	
-	private void sendStartSignal() {
-
-	}
-	
+	/**
+	 * Initial registration phase.  At the end, should purge the players list
+	 * so that anybody not connected gets dropped
+	 */
 	private void registerPlayers() {
 
 	}
+
 }
