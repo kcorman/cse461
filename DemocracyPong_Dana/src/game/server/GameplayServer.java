@@ -31,5 +31,4 @@ public class GameplayServer implements Runnable {
 	private void registerPlayers() {
 
 	}
-
 }
