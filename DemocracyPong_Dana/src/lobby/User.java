@@ -10,14 +10,17 @@ import java.net.Socket;
 
 
 public class User {
+	// Lobby related fields
 	private int userID;
 	private Socket userSocket;
 	private PrintWriter out;
 	private BufferedReader in;
 	
+	// Game related fields
 	private DatagramSocket gameSocket;
 	private int yVote;
 	private Game.Team team;
+	private int timeouts = 0;	// keep track of number of timeouts in-game
 	
 	public User(int userID, Socket userSocket) {
 		this.userID = userID;
@@ -29,6 +32,13 @@ public class User {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
+	
+	// included for game.server testing purposes
+	public User(int userID, Game.Team team, int yVote) {
+		this.userID = userID;
+		this.team = team;
+		this.yVote = yVote;
 	}
 	
 	public int getUserID() {
@@ -61,6 +71,19 @@ public class User {
 	
 	public void setTeam(Game.Team team) {
 		this.team = team;
+	}
+	
+	public int getTimeouts() {
+		return timeouts;
+	}
+	
+	public int incTimeouts() {
+		timeouts++;
+		return timeouts;
+	}
+	
+	public void clearTimeouts() {
+		this.timeouts = 0;
 	}
 	
 	public DatagramSocket getGameSocket() {
