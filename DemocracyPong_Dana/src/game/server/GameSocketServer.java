@@ -5,12 +5,12 @@ import game.entities.ClientState;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.net.SocketException;
+import java.net.SocketTimeoutException;
 import java.nio.ByteBuffer;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Map;
-import java.util.Queue;
 
 import lobby.User;
 
@@ -30,18 +30,37 @@ public class GameSocketServer implements GameServer, Runnable {
 
 	@Override
 	public void run() {
-		// TODO
+		registerPlayers();
+		game.start();
+		
+		while (true) {	// TODO shouldn't do this forever
+			// send/receive data
+			// make sure to keep track of timeouts and boot users who timeout
+		}
 	}
 
 	@Override
 	public void start() {
-		// TODO Auto-generated method stub
+		(new Thread(this)).start();
 	}
 		
+	/*
+	 * Listens and registers users for REG_TIME ms, or until all players have been registered.
+	 */
 	private void registerPlayers() {
 		long startTime = System.currentTimeMillis();
 		long endTime = startTime + REG_TIME;
-		
+		int registeredPlayers = 0;
+		int timeout = 0;
+
+		// This is to remember the previous value of the timeout, so it can be reset before returning
+		try {
+			timeout = udpSocket.getSoTimeout();
+		} catch (SocketException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+
 		// Receive stuff
 		byte[] rb = new byte[4];
 		ByteBuffer bb = ByteBuffer.wrap(rb);
@@ -52,8 +71,12 @@ public class GameSocketServer implements GameServer, Runnable {
 		DatagramPacket ackPacket = new DatagramPacket(sb, 1);
 
 		boolean left_team = true;
-		while (startTime < endTime) {
+		while (System.currentTimeMillis() < endTime && registeredPlayers < players.size()) {
 			try {
+				// ensure socket doesn't sit waiting to receive for longer than REG_TIME
+				int timeleft = (int) (endTime - System.currentTimeMillis());
+				udpSocket.setSoTimeout(timeleft);
+
 				// Receive a packet
 				udpSocket.receive(regPacket);
 				int uid = bb.getInt(0);
@@ -72,19 +95,30 @@ public class GameSocketServer implements GameServer, Runnable {
 				sb[0] = (left_team) ? (byte) Game.TEAM_LEFT : Game.TEAM_RIGHT;
 				ds.send(ackPacket);
 
-				// alternate teams
+				registeredPlayers++;
 				left_team = !left_team;
+			} catch (SocketTimeoutException e) {
+				e.printStackTrace();
+				break;
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
+		}
+
+		try {
+			udpSocket.setSoTimeout(timeout);
+		} catch (SocketException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 	}
 
 	/*
-	 * Ensures the userid passed is valid
+	 * Ensures the userid passed is in the game
 	 */
 	private boolean verifyUserID(int uid) {
+		// TODO add check to see if we've already seen this uid?
+		
 		if (!players.containsKey(uid))
 			return false;
 
