@@ -15,7 +15,6 @@ import lobby.User;
 public class GameMockServer implements GameServer, Runnable {
 	Game g;
 	Map<Integer, User> players = new HashMap<>();
-	Collection<ClientState> votes = new HashSet<>();
  
 	public GameMockServer() {
 		
@@ -26,11 +25,6 @@ public class GameMockServer implements GameServer, Runnable {
 			int team;
 			team = (i%2 == 0) ? Game.TEAM_LEFT : Game.TEAM_RIGHT;
 			players.put(i, new User(i, team, 300));
-			
-			// Votes
-			ClientState cs = new ClientState(i);
-			cs.yVote = 236;
-			votes.add(cs);
 		}
 		
 		g = new Game(players);
@@ -45,7 +39,6 @@ public class GameMockServer implements GameServer, Runnable {
 	@Override
 	public void run() {
 		while (true) {
-			g.updateVotes(votes);
 			System.out.println(g.getState());
 			try {
 				Thread.sleep(100);
