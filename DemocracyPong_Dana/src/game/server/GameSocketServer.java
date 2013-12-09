@@ -1,7 +1,6 @@
 package game.server;
 
 import game.entities.ClientState;
-import game.entities.GameState;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -9,45 +8,69 @@ import java.net.DatagramSocket;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.nio.ByteBuffer;
-import java.util.Collection;
-import java.util.LinkedList;
 import java.util.Map;
 
 import lobby.User;
 
 public class GameSocketServer implements GameServer, Runnable {
 	static final int REG_TIME = 3000;	// registration time, ms
+	static final int TIMEOUT = 50;		// client timeout, in ms
+	static final int MAX_TIMEOUTS = 3;
 	
 	private Map<Integer, User> players;
 	private DatagramSocket udpSocket;
 	private Game game;
-	private SocketVoteManager voteManager;
 
 	public GameSocketServer(Map<Integer, User> players, DatagramSocket udpSocket) {
 		this.players = players;
 		this.udpSocket = udpSocket;
 
 		game = new Game(players);
-		voteManager = new SocketVoteManager(players, udpSocket);
 	}
 
 	@Override
 	public void run() {
 		registerPlayers();
 		game.start();
-		voteManager.start();	// manages receiving votes
 
-		byte[] sb;
+		int clientPacketSize = ClientState.getMaxSize();
+		byte[] sb;	// send buffer
+		byte[] rb = new byte[clientPacketSize]; // receive buffer
+
 		while (true) {	// TODO shouldn't do this forever
 			
 			sb = game.getState().toBytes();
-			DatagramPacket statePacket = new DatagramPacket(sb, GameState.getMaxSize());
+			DatagramPacket statePacket = new DatagramPacket(sb, clientPacketSize);
 
-			// send gamestate to each user
+			// send gamestate to each user, receive client state from each user
 			for (User u : players.values()) {
 				DatagramSocket clientSocket = u.getGameSocket();
+
+				// player was never registered
+				if (clientSocket == null) {
+					players.remove(u.getUserID());
+					continue;
+				}
+
+				DatagramPacket clientPacket = new DatagramPacket(rb, clientPacketSize);
 				try {
 					clientSocket.send(statePacket);
+
+					// receive from client, clear timeouts on successful receive
+					clientSocket.setSoTimeout(TIMEOUT);
+					clientSocket.receive(clientPacket);
+					u.clearTimeouts();
+
+					// deserialize client state and update vote
+					ClientState cs = ClientState.fromBytes(rb);
+					players.get(cs.userId).setVote(cs.yVote);
+				} catch (SocketTimeoutException e) {
+					u.incTimeouts();
+					if (u.getTimeouts() > MAX_TIMEOUTS) {
+						// TODO send disconnect notification?
+						players.remove(u.getUserID());
+					}
+					continue;
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();

@@ -1,15 +1,15 @@
 package game.server;
 
 /**
- * Responsible for sending clients up-to-date GameState, as well as
- * keeping votes from clients current.
+ * Runs a game, and keeps clients up-to-date with GameState.  Also responsible
+ * for receiving client data and updating the players list appropriately.
  * @author Jonathan Ellington
  *
  */
 public interface GameServer {
 	
 	/**
-	 * Begin sending/receiving from clients
+	 * Start a game and begin client communications.
 	 */
 	public void start();
 
