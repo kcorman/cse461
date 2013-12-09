@@ -3,6 +3,7 @@ package game.server;
 import game.entities.ClientState;
 import game.entities.GameState;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
@@ -30,27 +31,21 @@ public class Game implements Runnable {
 	// Data
 	private Map<Integer, User> players;
 	private GameState state;
-	private StateUpdater updater;
 
 	public Game(Map<Integer, User> p) {
 		if (p == null)
 			throw new NullPointerException();
 		
 		players = p;
-		updater = new MockStateUpdater(p);
 		state = new GameState();
     	isServing = true;
 	}
 	
 	@Override
 	public void run() {
-		
-		int i =0;
 		while (true) {
 			updateBall();
 			updatePaddles();
-			if (++i > 20)
-				updater.start();
 			try {
 				Thread.sleep(BALL_UPDATE_TIME);
 			} catch (InterruptedException e) {
@@ -162,13 +157,8 @@ public class Game implements Runnable {
 	 * @modifies state.rightPaddleY
 	 */
 	private void updatePaddles() {
-		
 		// TODO ensure votes are somehow initialized to default value
-		if (updater == null) 
-			return; 	// do nothing, ie keep default votes
 
-		updateUsers(updater.getVotes());
-		
 		int leftVote = 0, rightVote = 0;
 		int leftNum = 0, rightNum = 0;
 		for (User p : players.values()) {
@@ -182,28 +172,26 @@ public class Game implements Runnable {
 			}
 		}
 		
-		state.leftPaddleY = leftVote/leftNum;
-		state.rightPaddleY = rightVote/rightNum;
+		if (leftNum > 0)
+			state.leftPaddleY = leftVote/leftNum;
+		
+		if (rightNum > 0)
+			state.rightPaddleY = rightVote/rightNum;
 	}
 	
 	/**
-	 * Updates the votes for users in q.  Removes users who have
-	 * more than the max number of timeouts, or if the user sends
-	 * a disconnect signal.
-	 * @param q queue holding the users whose votes are to be updated
-	 * @modifies players removes any user who has too many timeouts
+	 * Updates the votes for users in q.  If a ClientState in q has a 
+	 * userID that is not in players, simply skip it.
+	 * 
+	 * @param c collection holding the users whose votes are to be updated
 	 */
-	private void updateUsers(Queue<ClientState> q) {
-		for (ClientState cs : q) {
-			User currUser = players.get(cs.userId);
-			if (cs.yVote < 0) {
-				// Remove user if they timeout or send disconnect signal
-				int timeouts = currUser.incTimeouts();
-				if (timeouts > MAX_TIMEOUTS || cs.yVote == DISCONNECT)
-					players.remove(cs.userId);
-			}
-				players.remove(cs.userId);
-			currUser.setVote(cs.yVote);
+	public void updateVotes(Collection<ClientState> c) {
+		for (ClientState cs : c) {
+			if (players.containsKey(cs.userId)) {
+				User currUser = players.get(cs.userId);
+				currUser.setVote(cs.yVote);
+			} else
+				System.err.println("userID not in queue");
 		}
 	}
 	
@@ -215,11 +203,8 @@ public class Game implements Runnable {
 		return players;
 	}
 	
-	public StateUpdater getStateUpdater() {
-		return updater;
-	}
-	
-	public void setStateUpdater(StateUpdater updater) {
-		this.updater = updater;
+	// TODO return boolean?
+	public void start() {
+		(new Thread(this)).start();
 	}
 }
