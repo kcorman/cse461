@@ -1,6 +1,7 @@
 package game.server;
 
 import game.entities.ClientState;
+import game.entities.GameState;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -20,22 +21,38 @@ public class GameSocketServer implements GameServer, Runnable {
 	private Map<Integer, User> players;
 	private DatagramSocket udpSocket;
 	private Game game;
-	private Collection<ClientState> votes;	// should be cleared after updating game
+	private SocketVoteManager voteManager;
 
 	public GameSocketServer(Map<Integer, User> players, DatagramSocket udpSocket) {
 		this.players = players;
 		this.udpSocket = udpSocket;
+
 		game = new Game(players);
+		voteManager = new SocketVoteManager(players, udpSocket);
 	}
 
 	@Override
 	public void run() {
 		registerPlayers();
 		game.start();
-		
+		voteManager.start();	// manages receiving votes
+
+		byte[] sb;
 		while (true) {	// TODO shouldn't do this forever
-			// send/receive data
-			// make sure to keep track of timeouts and boot users who timeout
+			
+			sb = game.getState().toBytes();
+			DatagramPacket statePacket = new DatagramPacket(sb, GameState.getMaxSize());
+
+			// send gamestate to each user
+			for (User u : players.values()) {
+				DatagramSocket clientSocket = u.getGameSocket();
+				try {
+					clientSocket.send(statePacket);
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
 		}
 	}
 
@@ -105,6 +122,7 @@ public class GameSocketServer implements GameServer, Runnable {
 			}
 		}
 
+		// return timeout to start value
 		try {
 			udpSocket.setSoTimeout(timeout);
 		} catch (SocketException e) {
@@ -123,17 +141,5 @@ public class GameSocketServer implements GameServer, Runnable {
 			return false;
 
 		return true;
-	}
-
-	private void sendGameState() {
-		// TODO Auto-generated method stub
-	}
-
-	private void receiveVotes() {
-		// TODO Auto-generated method stub
-	}
-	
-	private Collection<ClientState> newCollection() {
-		return new LinkedList<ClientState>();
 	}
 }
