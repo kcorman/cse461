@@ -89,4 +89,8 @@ public class User {
 	public void setGameSocket(DatagramSocket gameSocket) {
 		this.gameSocket = gameSocket;
 	}
+	
+	public DatagramSocket getGameSocket() {
+		return gameSocket;
+	}
 }
