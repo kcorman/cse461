@@ -17,7 +17,8 @@ import lobby.User;
  */
 public class Game implements Runnable {
 	// Game management
-	public enum Team { LEFT, RIGHT };
+	// public enum Team { LEFT, RIGHT };
+	public static final int TEAM_LEFT = 0, TEAM_RIGHT = 1;
 	public static final int TIMEOUT = -1, DISCONNECT = -2;
 	public static final int MAX_TIMEOUTS = 3;
 	
@@ -162,7 +163,7 @@ public class Game implements Runnable {
 		int leftVote = 0, rightVote = 0;
 		int leftNum = 0, rightNum = 0;
 		for (User p : players.values()) {
-			if (p.getTeam() == Game.Team.LEFT) {
+			if (p.getTeam() == TEAM_LEFT) {
 				leftVote += p.getVote();
 				leftNum++;
 			}

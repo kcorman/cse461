@@ -23,8 +23,8 @@ public class GameMockServer implements GameServer, Runnable {
 		for (int i = 0; i < 20; i++) {
 			
 			// Players
-			Game.Team team;
-			team = (i%2 == 0) ? Game.Team.LEFT : Game.Team.RIGHT;
+			int team;
+			team = (i%2 == 0) ? Game.TEAM_LEFT : Game.TEAM_RIGHT;
 			players.put(i, new User(i, team, 300));
 			
 			// Votes

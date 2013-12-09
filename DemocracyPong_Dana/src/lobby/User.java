@@ -19,7 +19,7 @@ public class User {
 	// Game related fields
 	private DatagramSocket gameSocket;
 	private int yVote;
-	private Game.Team team;
+	private int team;
 	private int timeouts = 0;	// keep track of number of timeouts in-game
 	
 	public User(int userID, Socket userSocket) {
@@ -35,7 +35,7 @@ public class User {
 	}
 	
 	// included for game.server testing purposes
-	public User(int userID, Game.Team team, int yVote) {
+	public User(int userID, int team, int yVote) {
 		this.userID = userID;
 		this.team = team;
 		this.yVote = yVote;
@@ -65,11 +65,11 @@ public class User {
 		this.yVote = yVote;
 	}
 	
-	public Game.Team getTeam() {
+	public int getTeam() {
 		return team;
 	}
 	
-	public void setTeam(Game.Team team) {
+	public void setTeam(int team) {
 		this.team = team;
 	}
 	
@@ -86,7 +86,7 @@ public class User {
 		this.timeouts = 0;
 	}
 	
-	public DatagramSocket getGameSocket() {
-		return gameSocket;
+	public void setGameSocket(DatagramSocket gameSocket) {
+		this.gameSocket = gameSocket;
 	}
 }
