@@ -180,22 +180,6 @@ public class Game implements Runnable {
 			state.rightPaddleY = rightVote/rightNum;
 	}
 	
-	/**
-	 * Updates the votes for users in q.  If a ClientState in q has a 
-	 * userID that is not in players, simply skip it.
-	 * 
-	 * @param c collection holding the users whose votes are to be updated
-	 */
-	public void updateVotes(Collection<ClientState> c) {
-		for (ClientState cs : c) {
-			if (players.containsKey(cs.userId)) {
-				User currUser = players.get(cs.userId);
-				currUser.setVote(cs.yVote);
-			} else
-				System.err.println("userID not in queue");
-		}
-	}
-	
 	public GameState getState() {
 		return state;
 	}
