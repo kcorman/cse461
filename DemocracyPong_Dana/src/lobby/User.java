@@ -1,12 +1,11 @@
 package lobby;
 
-import game.server.Game;
-
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.DatagramSocket;
 import java.net.Socket;
+import java.net.SocketAddress;
 
 
 public class User {
@@ -17,7 +16,7 @@ public class User {
 	private BufferedReader in;
 	
 	// Game related fields
-	private DatagramSocket gameSocket;
+	private SocketAddress address;
 	private int yVote;
 	private int team;
 	private int timeouts = 0;	// keep track of number of timeouts in-game
@@ -86,11 +85,11 @@ public class User {
 		this.timeouts = 0;
 	}
 	
-	public void setGameSocket(DatagramSocket gameSocket) {
-		this.gameSocket = gameSocket;
+	public void setAddress(SocketAddress address) {
+		this.address = address;
 	}
 	
-	public DatagramSocket getGameSocket() {
-		return gameSocket;
+	public SocketAddress getAddress() {
+		return address;
 	}
 }
