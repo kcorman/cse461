@@ -1,5 +1,6 @@
 package game.client;
 
+import game.client.SoundPlayer.Sound;
 import game.entities.GameState;
 
 import java.awt.Color;
@@ -14,6 +15,12 @@ import javax.swing.JFrame;
 public class GameClientWindow extends JFrame implements MouseMotionListener, GameMousePositionSource{
 	private static final Dimension DEFAULT_SIZE = new Dimension(800,600);
 	private GameClientModel model;
+	//booleans used to ensure that the ball bounces off of the opposite
+	//side before playing a specified sound again
+	//Ideally sound handling would not be done in the window, but because of the way
+	//we abstracted the game info to the server, the window is the most convenient place
+	private enum BounceDirection {LEFT, TOP, RIGHT, BOTTOM};
+	private BounceDirection lastBounce = null;
 	int mouseX, mouseY;
 	
 	Image dbImage;
@@ -57,6 +64,35 @@ public class GameClientWindow extends JFrame implements MouseMotionListener, Gam
 		//draw ball
 		g.setColor(Color.white);
 		g.fillRect(s.ballX, s.ballY, GameState.BALL_SIZE, GameState.BALL_SIZE);
+		//plays sounds if appropriate
+		playSounds(s);
+	}
+	
+	/*
+	 * Checks the state to see if sounds should be played
+	 */
+	private void playSounds(GameState state){
+		if(state.ballX-4 <= state.leftPaddleX+state.paddleWidth){
+			if(lastBounce != BounceDirection.LEFT){
+				SoundPlayer.getInstance().playSound(Sound.LEFT_PADDLE);
+				lastBounce = BounceDirection.LEFT;
+			}
+		}else if(state.ballX+GameState.BALL_SIZE+4 >= state.rightPaddleX){
+			if(lastBounce != BounceDirection.RIGHT){
+				SoundPlayer.getInstance().playSound(Sound.RIGHT_PADDLE);
+				lastBounce = BounceDirection.RIGHT;
+			}
+		}else if(state.ballY+GameState.BALL_SIZE+4 >= state.upperBoundsY){
+			if(lastBounce != BounceDirection.TOP){
+				SoundPlayer.getInstance().playSound(Sound.HIT_WALL);
+				lastBounce = BounceDirection.TOP;
+			}
+		}else if(state.ballY - 4 <= state.lowerBoundsY){
+			if(lastBounce != BounceDirection.BOTTOM){
+				SoundPlayer.getInstance().playSound(Sound.HIT_WALL);
+				lastBounce = BounceDirection.BOTTOM;
+			}
+		}
 	}
 	@Override
 	public void mouseDragged(MouseEvent arg0) {

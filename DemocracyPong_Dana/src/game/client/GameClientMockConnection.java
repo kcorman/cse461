@@ -5,7 +5,7 @@ import game.entities.GameState;
 import java.util.concurrent.Executors;
 
 public class GameClientMockConnection implements GameClientConnection, Runnable{
-	static final double MAX_BOUNCE_ANGLE = 3*Math.PI/4;
+	static final double MAX_BOUNCE_ANGLE = 3*Math.PI/6;
 	double BALL_SPEED = 25;
 	GameMousePositionSource src;
 	GameClientModel m;
@@ -60,11 +60,11 @@ public class GameClientMockConnection implements GameClientConnection, Runnable{
 			return;
 		}
 		GameState s = m.getState();
-		if(s.ballY > s.lowerBoundsY){
-			s.ballY = s.lowerBoundsY - GameState.BALL_SIZE;
+		if(s.ballY > s.upperBoundsY){
+			s.ballY = s.upperBoundsY - GameState.BALL_SIZE;
 			s.ballDy *= -1;
-		}else if(s.ballY < s.upperBoundsY){
-			s.ballY = s.upperBoundsY;
+		}else if(s.ballY < s.lowerBoundsY){
+			s.ballY = s.lowerBoundsY;
 			s.ballDy *= -1;
 		}
 		//check for paddle collision or miss

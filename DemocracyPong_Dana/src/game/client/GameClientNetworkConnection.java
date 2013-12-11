@@ -13,7 +13,9 @@ import java.nio.ByteBuffer;
 import java.util.concurrent.Executors;
 
 public class GameClientNetworkConnection implements GameClientConnection, Runnable{
+	static final boolean DEBUG_ENABLED = true;
 	static final int MAX_FAILURES = 20;
+	static final int SOCKET_TIMEOUT_MS = 500;
 	String host;
 	int port;
 	int userId;
@@ -26,6 +28,7 @@ public class GameClientNetworkConnection implements GameClientConnection, Runnab
 	 * the given port. It will try to communicate as the userId given.
 	 * src is used to get mouse coordinates for "voting", and the model will be modified
 	 * as new states are received
+	 * Constructing this will not actually cause a connection to happen. To do that, call connect()
 	 * @param host the host to connect to
 	 * @param udpPort the remote port to connect to
 	 * @param userId the current user's id (provided by the server from the lobby)
@@ -43,12 +46,16 @@ public class GameClientNetworkConnection implements GameClientConnection, Runnab
 	}
 	@Override
 	public boolean connect() {
-
 		try {
-			DatagramSocket ds = new DatagramSocket();
-			ds.connect(InetAddress.getByName(host), port);
+			dgSocket = new DatagramSocket();
+			dgSocket.connect(InetAddress.getByName(host), port);
+			try {
+				dgSocket.setSoTimeout(500);
+			} catch (SocketException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
 			//start running this in a new thread
-			dgSocket = ds;
 			Executors.newSingleThreadExecutor().execute(this);
 			return true;
 			
@@ -74,6 +81,7 @@ public class GameClientNetworkConnection implements GameClientConnection, Runnab
 				dgSocket.receive(dp);
 				GameState s = GameState.fromBytes(buffer);
 				model.setState(s);
+				if(DEBUG_ENABLED) System.out.println("Read state: "+s);
 				failures = 0;
 			} catch (IOException e) {
 				failures++;
@@ -112,7 +120,6 @@ public class GameClientNetworkConnection implements GameClientConnection, Runnab
 		ByteBuffer buf = ByteBuffer.wrap(idBuf);
 		buf.putInt(userId);
 		DatagramPacket idPacket = new DatagramPacket(idBuf,idBuf.length);
-		
 		byte[] serverAckBuf = new byte[1];
 		DatagramPacket serverAckPacket = new DatagramPacket(serverAckBuf, serverAckBuf.length);
 		boolean receivedAck = false;
@@ -138,7 +145,6 @@ public class GameClientNetworkConnection implements GameClientConnection, Runnab
 				e.printStackTrace();
 			}
 		}
-		throw new UnsupportedOperationException();
 	}
 
 }
