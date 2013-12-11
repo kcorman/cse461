@@ -5,7 +5,7 @@ import game.entities.GameState;
 import java.util.concurrent.Executors;
 
 public class GameClientMockConnection implements GameClientConnection, Runnable{
-	static final double MAX_BOUNCE_ANGLE = 3*Math.PI/6;
+	static final double MAX_BOUNCE_ANGLE = Math.PI/3;
 	double BALL_SPEED = 25;
 	GameMousePositionSource src;
 	GameClientModel m;
@@ -90,9 +90,10 @@ public class GameClientMockConnection implements GameClientConnection, Runnable{
 			if(s.ballY+GameState.BALL_SIZE > s.rightPaddleY && s.ballY < s.rightPaddleY + s.paddleHeight){
 				//bounce off right paddle
 				s.ballX = s.rightPaddleX-GameState.BALL_SIZE;
-				int relativeIntersectY = (s.leftPaddleY+(s.paddleHeight/2)) - (s.ballY+GameState.BALL_SIZE/2);
+				int relativeIntersectY = (s.rightPaddleY+(s.paddleHeight/2)) - (s.ballY+GameState.BALL_SIZE/2);
 				//normalize
 				double normalized = ((double)relativeIntersectY)/s.paddleHeight;
+				System.out.println("Normalized = "+normalized);
 				double angle = normalized * MAX_BOUNCE_ANGLE;
 				s.ballDx = (int)-Math.abs((BALL_SPEED *Math.cos(angle)));
 				s.ballDy = (int)(BALL_SPEED *-Math.sin(angle));

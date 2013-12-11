@@ -9,15 +9,19 @@ import java.nio.ByteBuffer;
  * This can be modified as long as toBytes and fromBytes are properly updated as well (if necessary)
  * Also the getMaxSize must always reflect the upper bound of bytes required by a game state object
  * 
- * @Jon you can modify this class any way you see fit to implement game logic, just follow the
- * reccomendations above and it shouldn't break any code
- * You can decide if you want to include the ball logic in this class or if you want
- * to take a functional approach and use another class that operates on a GameState
+ * The max number of points to play to has a default value, but otherwise is left up to the server to set
+ * A max_points of 0 or less indicates an endless game that only ends when all players have left
  * 
+ * Displaying GameOver/Win messages and exiting is the responsibility of the client (and thus it 
+ * should check every state to see if either side has won)
  */
 public class GameState {
-	private static final int NUM_INTS = 14;		//should store the number of ints in an instance,
+	private static final int NUM_INTS = 16;		//should store the number of ints in an instance,
 	public static final int BALL_SIZE = 24;		//ball width and height
+	//This is ideally how often the state should be updated
+	//Storing this in a central location allows clients to implement graphics smoothing
+	//using dy/dx values
+	public static final int TIME_BETWEEN_UPDATES_MS = 50;
 	// Ball related fields
 	public int ballX, ballY, ballDx, ballDy;
 	//Paddle related fields
@@ -25,8 +29,12 @@ public class GameState {
 	public int paddleHeight, paddleWidth;
 	//Score related fields
 	public int leftScore, rightScore;
+	public int maxPoints;
 	//Boundary Y coordinates (X boundaries are behind respective paddles)
 	public int upperBoundsY, lowerBoundsY;
+	//other
+	//Sequence number should be updated every time the state is updated
+	public int sequenceNumber = Integer.MIN_VALUE;
 	
 	
 	/**
@@ -41,6 +49,7 @@ public class GameState {
 		rightPaddleX = 750;	//arbitrary, but based on the size of the game board
 		lowerBoundsY = 50;
 		upperBoundsY = 550;
+		maxPoints = 2;
 	}
 	
 	
@@ -64,8 +73,10 @@ public class GameState {
 		s.paddleWidth = buf.getInt();
 		s.leftScore = buf.getInt();
 		s.rightScore = buf.getInt();
+		s.maxPoints = buf.getInt();
 		s.upperBoundsY = buf.getInt();
 		s.lowerBoundsY = buf.getInt();
+		s.sequenceNumber = buf.getInt();
 		return s;
 	}
 	
@@ -89,8 +100,10 @@ public class GameState {
 		buf.putInt(paddleWidth);
 		buf.putInt(leftScore);
 		buf.putInt(rightScore);
+		buf.putInt(maxPoints);
 		buf.putInt(upperBoundsY);
 		buf.putInt(lowerBoundsY);
+		buf.putInt(sequenceNumber);
 		return array;
 	}
 	

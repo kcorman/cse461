@@ -5,6 +5,7 @@ import game.entities.GameState;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.event.MouseEvent;
@@ -14,6 +15,8 @@ import javax.swing.JFrame;
 
 public class GameClientWindow extends JFrame implements MouseMotionListener, GameMousePositionSource{
 	private static final Dimension DEFAULT_SIZE = new Dimension(800,600);
+	private static final Font WIN_FONT = new Font("Ariel", Font.BOLD, 64);
+	private static final Font LOSE_FONT = new Font("Ariel", Font.BOLD, 64);
 	private GameClientModel model;
 	//booleans used to ensure that the ball bounces off of the opposite
 	//side before playing a specified sound again
@@ -50,6 +53,18 @@ public class GameClientWindow extends JFrame implements MouseMotionListener, Gam
 		g.fillRect(0, 0, getWidth(), getHeight());
 		g.setColor(Color.white);
 		GameState s = model.getState();
+		if(model.isGameOver()){
+			if(model.hasWon()){
+				g.setColor(Color.GREEN);
+				g.setFont(WIN_FONT);
+				g.drawString("You win!", getWidth()/2 - 32*7, getHeight()/2);
+			}else{
+				g.setColor(Color.RED);
+				g.setFont(LOSE_FONT);
+				g.drawString("You lose!", getWidth()/2 - 32*7, getHeight()/2);
+			}
+			return;
+		}
 		//Draw scores
 		g.drawString("Score: "+s.getLeftScore(), 25, 45);
 		g.drawString("Score: "+s.getRightScore(), getWidth()-75, 45);
