@@ -6,6 +6,9 @@ import java.util.concurrent.Executors;
 
 public class GameClientMockConnection implements GameClientConnection, Runnable{
 	static final double MAX_BOUNCE_ANGLE = Math.PI/3;
+	static final boolean USE_LAG_SIMULATION = true;
+	static final double LAG_FACTOR = .7;	//Percentage of states to drop
+	private GameState recentState = null;
 	double BALL_SPEED = 25;
 	GameMousePositionSource src;
 	GameClientModel m;
@@ -31,13 +34,18 @@ public class GameClientMockConnection implements GameClientConnection, Runnable{
 	public void run() {
 		initializeGameState();
 		while(true){
+			/*
+			 * All of the following methods internally update recentState, not m.getState()
+			 */
 			updateBall();
 			updateOpponent();
-			m.getState().leftPaddleY = src.getMouseY();//+noise();
+			recentState.leftPaddleY = src.getMouseY();//+noise();
+			recentState.timeUpdated = System.currentTimeMillis();
 			//serialize and deserialize state to test functionality
-			m.setState(GameState.fromBytes(m.getState().toBytes()));
+			if(!USE_LAG_SIMULATION || Math.random() > LAG_FACTOR)
+				m.setState(GameState.fromBytes(recentState.toBytes()));
 			try {
-				Thread.sleep(50);
+				Thread.sleep(GameState.TIME_BETWEEN_UPDATES_MS);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -48,6 +56,7 @@ public class GameClientMockConnection implements GameClientConnection, Runnable{
 	public void initializeGameState(){
 		GameState s = new GameState();
 		m.setState(s);
+		recentState = s;
 		serveBall();
 	}
 	
@@ -59,7 +68,7 @@ public class GameClientMockConnection implements GameClientConnection, Runnable{
 			serveBall();
 			return;
 		}
-		GameState s = m.getState();
+		GameState s = recentState;
 		if(s.ballY > s.upperBoundsY){
 			s.ballY = s.upperBoundsY - GameState.BALL_SIZE;
 			s.ballDy *= -1;
@@ -93,7 +102,6 @@ public class GameClientMockConnection implements GameClientConnection, Runnable{
 				int relativeIntersectY = (s.rightPaddleY+(s.paddleHeight/2)) - (s.ballY+GameState.BALL_SIZE/2);
 				//normalize
 				double normalized = ((double)relativeIntersectY)/s.paddleHeight;
-				System.out.println("Normalized = "+normalized);
 				double angle = normalized * MAX_BOUNCE_ANGLE;
 				s.ballDx = (int)-Math.abs((BALL_SPEED *Math.cos(angle)));
 				s.ballDy = (int)(BALL_SPEED *-Math.sin(angle));
@@ -108,7 +116,7 @@ public class GameClientMockConnection implements GameClientConnection, Runnable{
 	}
 	
 	public void serveBall(){
-		GameState s = m.getState();
+		GameState s = recentState;
 		/*
 		 * Stuff related to waiting before serving
 		 */
@@ -137,7 +145,7 @@ public class GameClientMockConnection implements GameClientConnection, Runnable{
 	
 	public void updateOpponent(){
 		//assume ai is right side
-		GameState s = m.getState();
+		GameState s = recentState;
 		if(s.ballY > s.getRightPaddleY()+s.paddleHeight/2){
 			if(goingUp = !(Math.random() > aiNoise));
 		}else if(s.ballY < s.getRightPaddleY()){

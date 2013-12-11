@@ -3,6 +3,7 @@ package game.client;
 import game.entities.GameState;
 
 public class GameClientModel {
+	private long timeStateSet = System.currentTimeMillis();
 	private GameState currentState = new GameState();
 	private boolean isOnLeftSide = true;	//Whether or not the main player is on the left
 											//side or not
@@ -14,6 +15,7 @@ public class GameClientModel {
 
 	public void setState(GameState currentState) {
 		this.currentState = currentState;
+		timeStateSet = System.currentTimeMillis();
 	}
 
 	public boolean isOnLeftSide() {
@@ -50,5 +52,6 @@ public class GameClientModel {
 			return currentState.rightScore >= currentState.maxPoints;
 		}
 	}
+	
 	
 }

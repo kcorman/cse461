@@ -16,7 +16,7 @@ import java.nio.ByteBuffer;
  * should check every state to see if either side has won)
  */
 public class GameState {
-	private static final int NUM_INTS = 16;		//should store the number of ints in an instance,
+	private static final int NUM_INTS = 17;		//should store the number of ints in an instance,
 	public static final int BALL_SIZE = 24;		//ball width and height
 	//This is ideally how often the state should be updated
 	//Storing this in a central location allows clients to implement graphics smoothing
@@ -33,8 +33,8 @@ public class GameState {
 	//Boundary Y coordinates (X boundaries are behind respective paddles)
 	public int upperBoundsY, lowerBoundsY;
 	//other
-	//Sequence number should be updated every time the state is updated
-	public int sequenceNumber = Integer.MIN_VALUE;
+	//This should be updated every time the state is updated
+	public long timeUpdated = System.currentTimeMillis();
 	
 	
 	/**
@@ -76,7 +76,7 @@ public class GameState {
 		s.maxPoints = buf.getInt();
 		s.upperBoundsY = buf.getInt();
 		s.lowerBoundsY = buf.getInt();
-		s.sequenceNumber = buf.getInt();
+		s.timeUpdated = buf.getLong();
 		return s;
 	}
 	
@@ -103,7 +103,7 @@ public class GameState {
 		buf.putInt(maxPoints);
 		buf.putInt(upperBoundsY);
 		buf.putInt(lowerBoundsY);
-		buf.putInt(sequenceNumber);
+		buf.putLong(timeUpdated);
 		return array;
 	}
 	
