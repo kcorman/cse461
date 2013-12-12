@@ -131,8 +131,8 @@ public class GameSocketServer implements GameServer, Runnable {
 				} catch (SocketTimeoutException e) {
 					if (timeouts > MAX_TIMEOUTS) {
 						System.out.println("SERVER: No data received in " + timeouts + " + timeouts.  Quitting...");
-						game.stop();
-						return;
+						playing = false;
+						break;
 					}
 					timeouts++;
 					continue;
