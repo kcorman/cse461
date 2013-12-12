@@ -56,54 +56,78 @@ public class GameRoomManager extends Thread {
 	private void processUser(User u) {
 		BufferedReader in = u.getUserInputStream();
 		PrintWriter out = u.getUserOutputStream();
-		String userInput1, userInput2;
 		try {
-			if ((userInput1 = in.readLine()) == null || (userInput2 = in.readLine()) == null) {
-				System.out.println("User " + u.getUserID() + " failed to send a valid request");
-				u.getUserSocket().close();
-			} else if (rooms.isEmpty()) {
-				// No choice, user has to host game
-				System.out.println("userInput1 = " + userInput1 + ", userInput2 = " + userInput2);
-				hostRoom(u, out);
-				System.out.println("Created new room!");
-			} else {
-				RoomCapacity r = null;
-				Room room = null;
-				DemocracyConstants.UserRoomOption userOption = 
-						DemocracyConstants.UserRoomOption.values()[Integer.parseInt(userInput1)];
-				switch (userOption) {
-					case HOST:
-						hostRoom(u, out);
-						break;
-					case JOIN_SPECIFIC:
-						int roomNum = Integer.parseInt(userInput2);
-						for (int i = 0; i < rooms.size(); ++i) {
-							room = rooms.get(i);
-							if (room.hostID == roomNum) {
-								r = room.joinRoom(u);
-								sendUserStatusInfo(out, u.getUserID(), 
-										DemocracyConstants.UserRoomOption.JOIN_SPECIFIC, room.hostID);
-								room.sendRoomInfo();
-							}
-						}
-						if (r != null)
-							break;
-						// else fall through to JOIN_RANDOM
-					case JOIN_RANDOM:
-						room = rooms.get(0);
-						r = room.joinRoom(u);
-						sendUserStatusInfo(out, u.getUserID(), 
-								DemocracyConstants.UserRoomOption.JOIN_RANDOM, room.hostID);
-						room.sendRoomInfo();
-						break;
-				}
-				System.out.println("r = " + r.toString());
-				if (r == RoomCapacity.FULL) {
-					// TODO: hand off players to GameServer
-					room.sendRoomReady();
-				}
+			// Step 1: send uid, # rooms, foreach room, room#, #players
+			out.println(u.getUserID());
+			out.println(rooms.size());
+			for (Room r : rooms) {
+				out.println(r.hostID);
+				out.println(r.players.size());
 			}
-		} catch (IOException e) {
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+//			if ((userInput1 = in.readLine()) == null || (userInput2 = in.readLine()) == null) {
+//				System.out.println("User " + u.getUserID() + " failed to send a valid request");
+//				u.getUserSocket().close();
+//			} else if (rooms.isEmpty()) {
+//				// No choice, user has to host game
+//				System.out.println("userInput1 = " + userInput1 + ", userInput2 = " + userInput2);
+//				hostRoom(u, out);
+//				System.out.println("Created new room!");
+//			} else {
+//				RoomCapacity r = null;
+//				Room room = null;
+//				DemocracyConstants.UserRoomOption userOption = 
+//						DemocracyConstants.UserRoomOption.values()[Integer.parseInt(userInput1)];
+//				switch (userOption) {
+//					case HOST:
+//						hostRoom(u, out);
+//						break;
+//					case JOIN_SPECIFIC:
+//						int roomNum = Integer.parseInt(userInput2);
+//						for (int i = 0; i < rooms.size(); ++i) {
+//							room = rooms.get(i);
+//							if (room.hostID == roomNum) {
+//								r = room.joinRoom(u);
+//								sendUserStatusInfo(out, u.getUserID(), 
+//										DemocracyConstants.UserRoomOption.JOIN_SPECIFIC, room.hostID);
+//								room.sendRoomInfo();
+//							}
+//						}
+//						if (r != null)
+//							break;
+//						// else fall through to JOIN_RANDOM
+//					case JOIN_RANDOM:
+//						room = rooms.get(0);
+//						r = room.joinRoom(u);
+//						sendUserStatusInfo(out, u.getUserID(), 
+//								DemocracyConstants.UserRoomOption.JOIN_RANDOM, room.hostID);
+//						room.sendRoomInfo();
+//						break;
+//				}
+//				System.out.println("r = " + r.toString());
+//				if (r == RoomCapacity.FULL) {
+//					// TODO: hand off players to GameServer
+//					room.sendRoomReady();
+//				}
+//			}
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
