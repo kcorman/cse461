@@ -21,7 +21,6 @@ public class User implements GamePlayer{
 	private SocketAddress address;
 	private int yVote;
 	private int team;
-	private int timeouts = 0;	// keep track of number of timeouts in-game
 	
 	public User(int userID, Socket userSocket) {
 		this.userID = userID;
@@ -72,19 +71,6 @@ public class User implements GamePlayer{
 	
 	public void setTeam(int team) {
 		this.team = team;
-	}
-	
-	public int getTimeouts() {
-		return timeouts;
-	}
-	
-	public int incTimeouts() {
-		timeouts++;
-		return timeouts;
-	}
-	
-	public void clearTimeouts() {
-		this.timeouts = 0;
 	}
 	
 	public void setAddress(SocketAddress address) {

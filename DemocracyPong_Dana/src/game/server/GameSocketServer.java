@@ -38,12 +38,14 @@ import lobby.User;
  *
  */
 public class GameSocketServer implements GameServer, Runnable {
+	static final boolean DEBUG = true;
 	static final int REG_TIME = 3000;	// registration time, ms
-	static final int TIMEOUT = 50;		// client timeout, in ms
-	static final int MAX_TIMEOUTS = 3;
+	static final int TIMEOUT = 10;		// client timeout, in ms
+	static final int MAX_TIMEOUTS = 5;
 	
 	static final int DISCONNECT_SIGNAL = -1;
 	
+	private int timeouts;
 	private ConcurrentMap<Integer, User> players;
 	private DatagramSocket udpSocket;
 	private Game game;
@@ -68,19 +70,20 @@ public class GameSocketServer implements GameServer, Runnable {
 		game.start();
 
 		int clientPacketSize = ClientState.getMaxSize();
-		byte[] sb;	// send buffer
-		byte[] rb = new byte[clientPacketSize]; // receive buffer
+		byte[] stateBuf;	// send buffer
+		byte[] clientBuf = new byte[clientPacketSize]; // receive buffer
 
 		while (true) {	// TODO shouldn't do this forever
 			try {
 				udpSocket.setSoTimeout(TIMEOUT);
 			} catch (SocketException e1) {
-				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
-			sb = game.getState().toBytes();
 
-			// send gamestate to each user, receive client state from each user
+			// Serialize current game state
+			stateBuf = game.getState().toBytes();
+
+			// Send GameState to each user, receive votes
 			Iterator<Entry<Integer, User>> it = players.entrySet().iterator();
 			while (it.hasNext()) {
 				Map.Entry<Integer,User> pairs = it.next();
@@ -96,48 +99,38 @@ public class GameSocketServer implements GameServer, Runnable {
 				}
 
 				try {
-					// send GameState packet to current user
-					DatagramPacket statePacket = new DatagramPacket(sb, GameState.getMaxSize(), address);
+					// Send GameState packet to current user
+					DatagramPacket statePacket = new DatagramPacket(stateBuf, GameState.getMaxSize(), address);
 					udpSocket.send(statePacket);
 
-					// receive from client at address, see comment below, clear timeouts on successful receive
-					DatagramPacket clientPacket = new DatagramPacket(rb, clientPacketSize);
+					// Receive from client at address, see comment below, clear timeouts on successful receive
+					DatagramPacket clientPacket = new DatagramPacket(clientBuf, clientPacketSize);
 					udpSocket.receive(clientPacket);
-					u.clearTimeouts();
 
-					// deserialize client state and update vote
-					ClientState cs = ClientState.fromBytes(rb);
+					// Deserialize client state
+					ClientState cs = ClientState.fromBytes(clientBuf);
 
-					/*
-					 * Discarding packets from users who are not the one being processed.
-					 * Wasteful, but makes things easy.  Consider making faster if problems
-					 * arise.
-					 */
-//					if (u.getUserID() != cs.userId) {	
-//						continue;
-//					}
-
+					// Verify packet
 					if (!verifyUserID(cs.userId))
 						continue;
-					
+
 					if (cs.yVote == DISCONNECT_SIGNAL) {
 						it.remove();
 						continue;
 					}
 
-					System.out.println("SERVER: Received from userid: " + pairs.getKey() + " vote: " + cs.yVote);
+					// Update vote
+					if (DEBUG) System.out.println("SERVER: Received from userid: " + pairs.getKey() + " vote: " + cs.yVote);
 					players.get(cs.userId).setVote(cs.yVote);
+					timeouts = 0;
 				} catch (SocketTimeoutException e) {
-					u.incTimeouts();
-					System.out.println("SERVER: " + pairs.getKey() + " timed out and has " + pairs.getValue().getTimeouts() + " timeouts");
-					if (u.getTimeouts() > MAX_TIMEOUTS) {
-						// TODO send disconnect notification?
-						System.out.println("SERVER: Removing userid: " + pairs.getKey());
-						it.remove();
+					if (timeouts > MAX_TIMEOUTS) {
+						System.out.println("SERVER: No data received in " + timeouts + " + timeouts.  Quitting...");
+						return;
 					}
+					timeouts++;
 					continue;
 				} catch (IOException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 			}
@@ -184,7 +177,7 @@ public class GameSocketServer implements GameServer, Runnable {
 				// Receive a packet
 				udpSocket.receive(regPacket);	// TODO figure out why this receives when nothing is sent
 				int uid = bb.getInt(0);
-				System.out.println("uid: " + uid);
+				if (DEBUG) System.out.println("SERVER: Received registration request from uid=" + uid);
 
 				// throw away bad packets
 				if (!verifyUserID(uid))
@@ -226,15 +219,13 @@ public class GameSocketServer implements GameServer, Runnable {
 			e.printStackTrace();
 		}
 
-		System.out.println("SERVER: number registered: " + numRegistered);
+		System.out.println("SERVER: number of users registered: " + numRegistered);
 	}
 
 	/*
 	 * Ensures the userid passed is in the game
 	 */
 	private boolean verifyUserID(int uid) {
-		// TODO add check to see if we've already seen this uid?
-		
 		if (!players.containsKey(uid))
 			return false;
 
