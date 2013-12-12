@@ -1,5 +1,8 @@
 package lobby;
 
+import java.io.IOException;
+import java.net.UnknownHostException;
+
 public interface ConnectionBean {
 	
 	public LobbyState getState();
@@ -14,5 +17,5 @@ public interface ConnectionBean {
 	
 	public void startGame();
 	
-	public void connect(String hostname, int port);
+	public void connect(String hostname, int port) throws UnknownHostException, IOException;
 }
