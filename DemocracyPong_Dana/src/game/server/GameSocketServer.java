@@ -73,16 +73,21 @@ public class GameSocketServer implements GameServer, Runnable {
 		byte[] stateBuf;	// send buffer
 		byte[] clientBuf = new byte[clientPacketSize]; // receive buffer
 
-		while (true) {	// TODO shouldn't do this forever
-			try {
-				udpSocket.setSoTimeout(TIMEOUT);
-			} catch (SocketException e1) {
-				e1.printStackTrace();
-			}
+		try {
+			udpSocket.setSoTimeout(TIMEOUT);
+		} catch (SocketException e1) {
+			e1.printStackTrace();
+		}
+
+		boolean playing = true;
+		while (playing) {	
+			// End game if there is a winner
+			if (game.getState().getWinner() != Game.NO_WINNER)
+				playing = false;
 
 			// Serialize current game state
 			stateBuf = game.getState().toBytes();
-
+			
 			// Send GameState to each user, receive votes
 			Iterator<Entry<Integer, User>> it = players.entrySet().iterator();
 			while (it.hasNext()) {
@@ -126,6 +131,7 @@ public class GameSocketServer implements GameServer, Runnable {
 				} catch (SocketTimeoutException e) {
 					if (timeouts > MAX_TIMEOUTS) {
 						System.out.println("SERVER: No data received in " + timeouts + " + timeouts.  Quitting...");
+						game.stop();
 						return;
 					}
 					timeouts++;
@@ -135,6 +141,8 @@ public class GameSocketServer implements GameServer, Runnable {
 				}
 			}
 		}
+		
+		game.stop();
 	}
 
 	@Override
