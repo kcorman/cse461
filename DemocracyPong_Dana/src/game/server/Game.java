@@ -89,8 +89,7 @@ public class Game implements Runnable {
 				double normalized = ((double)relativeIntersectY)/s.paddleHeight;
 				double angle = normalized * MAX_BOUNCE_ANGLE;
 				// s.ballDx = (int)Math.abs(BALL_SPEED *Math.cos(angle));
-				// s.ballDy = (int)(BALL_SPEED *-Math.sin(angle));
-				s.ballDy = (int) (normalized * BALL_SPEED);
+				s.ballDy = (int)(BALL_SPEED *-Math.sin(angle));
 			}
 			else{
 				s.rightScore++;
@@ -108,8 +107,7 @@ public class Game implements Runnable {
 				double normalized = ((double)relativeIntersectY)/s.paddleHeight;
 				double angle = normalized * MAX_BOUNCE_ANGLE;
 				// s.ballDx = (int)-Math.abs((BALL_SPEED *Math.cos(angle)));
-				// s.ballDy = (int)(BALL_SPEED *-Math.sin(angle));
-				s.ballDy = (int) (normalized * BALL_SPEED);
+				s.ballDy = (int)(BALL_SPEED *-Math.sin(angle));
 			}else{
 				s.leftScore++;
 				serveBall();

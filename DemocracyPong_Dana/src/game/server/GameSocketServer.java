@@ -95,16 +95,13 @@ public class GameSocketServer implements GameServer, Runnable {
 					continue;
 				}
 
-				DatagramPacket clientPacket = new DatagramPacket(rb, clientPacketSize);
 				try {
-					// connect to particular user
-					udpSocket.connect(address);
-
-					// send GameState packet
-					DatagramPacket statePacket = new DatagramPacket(sb, GameState.getMaxSize());
+					// send GameState packet to current user
+					DatagramPacket statePacket = new DatagramPacket(sb, GameState.getMaxSize(), address);
 					udpSocket.send(statePacket);
 
-					// receive from client, clear timeouts on successful receive
+					// receive from client at address, see comment below, clear timeouts on successful receive
+					DatagramPacket clientPacket = new DatagramPacket(rb, clientPacketSize);
 					udpSocket.receive(clientPacket);
 					u.clearTimeouts();
 
@@ -116,9 +113,9 @@ public class GameSocketServer implements GameServer, Runnable {
 					 * Wasteful, but makes things easy.  Consider making faster if problems
 					 * arise.
 					 */
-					if (u.getUserID() != cs.userId) {	
-						continue;
-					}
+//					if (u.getUserID() != cs.userId) {	
+//						continue;
+//					}
 
 					if (!verifyUserID(cs.userId))
 						continue;
@@ -128,7 +125,7 @@ public class GameSocketServer implements GameServer, Runnable {
 						continue;
 					}
 
-					//System.out.println("SERVER: Received from userid: " + pairs.getKey() + " vote: " + cs.yVote);
+					System.out.println("SERVER: Received from userid: " + pairs.getKey() + " vote: " + cs.yVote);
 					players.get(cs.userId).setVote(cs.yVote);
 				} catch (SocketTimeoutException e) {
 					u.incTimeouts();
@@ -187,6 +184,7 @@ public class GameSocketServer implements GameServer, Runnable {
 				// Receive a packet
 				udpSocket.receive(regPacket);	// TODO figure out why this receives when nothing is sent
 				int uid = bb.getInt(0);
+				System.out.println("uid: " + uid);
 
 				// throw away bad packets
 				if (!verifyUserID(uid))
@@ -209,10 +207,8 @@ public class GameSocketServer implements GameServer, Runnable {
 				int team = (left_team) ? Game.TEAM_LEFT : Game.TEAM_RIGHT;
 				sb[0] = (byte) team;
 				players.get(uid).setTeam(team);
-				udpSocket.connect(sa);
-				DatagramPacket ackPacket = new DatagramPacket(sb, 1);
+				DatagramPacket ackPacket = new DatagramPacket(sb, 1, sa);
 				udpSocket.send(ackPacket);
-				udpSocket.disconnect();		// want to receive from anyone after sending ack
 
 				left_team = !left_team;
 			} catch (SocketTimeoutException e) {

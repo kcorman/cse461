@@ -85,6 +85,7 @@ public class MockClient implements Runnable {
 				e.printStackTrace();
 			}
 		}
+		System.out.println("CLIENT:" + userid + " Done registering.");
 		//throw new UnsupportedOperationException();
 	}
 }

@@ -31,7 +31,6 @@ public class MockMain {
 		try {
 			ds = new DatagramSocket(PORT);
 			PORT = ds.getLocalPort();
-			System.out.println(PORT);
 		} catch (SocketException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -40,7 +39,6 @@ public class MockMain {
 		GameServer g = new GameSocketServer(players, ds);
 		g.start();
 		
-		// spawn MockClients
 		for (int i = 0; i < NUM_PLAYERS; i++) {
 			MockClient mc = new MockClient(HOST, PORT, i);
 			(new Thread(mc)).start();
