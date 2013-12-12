@@ -14,26 +14,24 @@ import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
 
 
-public class RoomPanel extends JPanel {
+public class LobbyPanel extends JPanel {
 	private static final int VISIBLE_ROWS = 10;
-	private static final String PLAYERS_IN_ROOM = "Players in Room ";
-	private static final String LEAVE_ROOM = "Leave Room";
-	private static final String START_GAME = "Start Game";
+	private static final String ROOMS_AVAILABLE = "Available Rooms";
+	private static final String HOST_ROOM = "Host Room";
+	private static final String JOIN_GAME = "Join Room";
 	
-	private String uid;
-	private JLabel roomTitle;
-	private String roomNum;
+	private JLabel lobbyTitle;
 	private JList<String> playerList;
 	
-	public RoomPanel(String[] test) {
+	public LobbyPanel(String[] test) {
 		this.setLayout(new BorderLayout());
 		
 		// room title
-		roomTitle = new JLabel();
-		roomTitle.setText(PLAYERS_IN_ROOM); 	// add action listener
-		roomTitle.setHorizontalAlignment(SwingConstants.CENTER);
-		roomTitle.setVerticalAlignment(SwingConstants.CENTER);
-		this.add(roomTitle, BorderLayout.NORTH);
+		lobbyTitle = new JLabel();
+		lobbyTitle.setText(ROOMS_AVAILABLE); 	// add action listener
+		lobbyTitle.setHorizontalAlignment(SwingConstants.CENTER);
+		lobbyTitle.setVerticalAlignment(SwingConstants.CENTER);
+		this.add(lobbyTitle, BorderLayout.NORTH);
 		
 		// list of players
 		playerList = new JList<String>(test);		// add action listener
@@ -46,11 +44,11 @@ public class RoomPanel extends JPanel {
 		
 		// add exit room/ start game buttons
 		JPanel buttonPanel = new JPanel();
-		JButton leaveButton = new JButton(LEAVE_ROOM);
-		JButton startButton = new JButton(START_GAME);
+		JButton hostButton = new JButton(HOST_ROOM);
+		JButton joinButton = new JButton(JOIN_GAME);
 		buttonPanel.setLayout(new GridLayout(2, 0));
-		buttonPanel.add(leaveButton);
-		buttonPanel.add(startButton);
+		buttonPanel.add(hostButton);
+		buttonPanel.add(joinButton);
 		this.add(buttonPanel, BorderLayout.SOUTH);
 		
 	}
