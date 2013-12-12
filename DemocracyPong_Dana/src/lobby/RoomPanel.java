@@ -14,7 +14,7 @@ import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
 
 
-public class RoomPanel extends JPanel {
+public class RoomPanel extends JPanel implements LobbyConnectionListener{
 	private static final int VISIBLE_ROWS = 10;
 	private static final String PLAYERS_IN_ROOM = "Players in Room ";
 	private static final String LEAVE_ROOM = "Leave Room";
@@ -24,8 +24,10 @@ public class RoomPanel extends JPanel {
 	private JLabel roomTitle;
 	private String roomNum;
 	private JList<String> playerList;
+	//Label used for displaying that we're not connected
+	private final JLabel notConnectedLabel = new JLabel("Not connected");
 	
-	public RoomPanel(String[] test) {
+	public RoomPanel(ConnectionBean connectionBean) {
 		this.setLayout(new BorderLayout());
 		
 		// room title
@@ -35,8 +37,20 @@ public class RoomPanel extends JPanel {
 		roomTitle.setVerticalAlignment(SwingConstants.CENTER);
 		this.add(roomTitle, BorderLayout.NORTH);
 		
+		/* Don't add the rest of the components until successful connection */
+		this.add(notConnectedLabel, BorderLayout.CENTER);
+		
+	}
+	
+	public void notifyViewer(List<String> playerList, String uid) {
+
+	}
+
+	@Override
+	public void onSuccessfulConnect() {
 		// list of players
-		playerList = new JList<String>(test);		// add action listener
+		this.remove(notConnectedLabel);
+		playerList = new JList<String>();		// add action listener
 		playerList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		playerList.setLayoutOrientation(JList.VERTICAL);
 		playerList.setVisibleRowCount(VISIBLE_ROWS);
@@ -52,10 +66,6 @@ public class RoomPanel extends JPanel {
 		buttonPanel.add(leaveButton);
 		buttonPanel.add(startButton);
 		this.add(buttonPanel, BorderLayout.SOUTH);
-		
-	}
-	
-	public void notifyViewer(List<String> playerList, String uid) {
 
 	}
 }

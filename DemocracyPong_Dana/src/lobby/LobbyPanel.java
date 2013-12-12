@@ -14,7 +14,13 @@ import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
 
 
-public class LobbyPanel extends JPanel {
+/**
+ * 
+ * @author kcorman
+ * This is the actual panel that contains information about the rooms in a lobby
+ * The implementation of the lobby window is under LobbyWindow
+ */
+public class LobbyPanel extends JPanel implements LobbyConnectionListener {
 	private static final int VISIBLE_ROWS = 10;
 	private static final String ROOMS_AVAILABLE = "Available Rooms";
 	private static final String HOST_ROOM = "Host Room";
@@ -22,10 +28,10 @@ public class LobbyPanel extends JPanel {
 	
 	private JLabel lobbyTitle;
 	private JList<String> playerList;
+	private final JLabel notConnectedLabel = new JLabel("Not connected");
 	
-	public LobbyPanel(String[] test) {
+	public LobbyPanel(ConnectionBean connectionBean) {
 		this.setLayout(new BorderLayout());
-		
 		// room title
 		lobbyTitle = new JLabel();
 		lobbyTitle.setText(ROOMS_AVAILABLE); 	// add action listener
@@ -33,8 +39,19 @@ public class LobbyPanel extends JPanel {
 		lobbyTitle.setVerticalAlignment(SwingConstants.CENTER);
 		this.add(lobbyTitle, BorderLayout.NORTH);
 		
+		this.add(notConnectedLabel, BorderLayout.CENTER);
+		
+	}
+	
+	public void notifyViewer(List<String> playerList, String uid) {
+
+	}
+
+	@Override
+	public void onSuccessfulConnect() {
+		this.remove(notConnectedLabel);
 		// list of players
-		playerList = new JList<String>(test);		// add action listener
+		playerList = new JList<String>();		// add action listener
 		playerList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		playerList.setLayoutOrientation(JList.VERTICAL);
 		playerList.setVisibleRowCount(VISIBLE_ROWS);
@@ -51,9 +68,5 @@ public class LobbyPanel extends JPanel {
 		buttonPanel.add(joinButton);
 		this.add(buttonPanel, BorderLayout.SOUTH);
 		
-	}
-	
-	public void notifyViewer(List<String> playerList, String uid) {
-
 	}
 }
