@@ -1,5 +1,7 @@
 package lobby;
 
+import game.server.GamePlayer;
+
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
@@ -8,7 +10,7 @@ import java.net.Socket;
 import java.net.SocketAddress;
 
 
-public class User {
+public class User implements GamePlayer{
 	// Lobby related fields
 	private int userID;
 	private Socket userSocket;

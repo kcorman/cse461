@@ -13,7 +13,7 @@ package game.client;
  */
 public class GameClientMain {
 	public static void main(String[] arr){
-		GameClientModel m = new GameClientModel();
+		GameClientModel m = new SynchronizingGameClientModel();
 		GameClientWindow w = new GameClientWindow(m);
 		GameClientConnection c = new GameClientMockConnection(w, m);
 		if(c.connect()){

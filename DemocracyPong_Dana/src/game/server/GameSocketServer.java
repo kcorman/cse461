@@ -1,6 +1,7 @@
 package game.server;
 
 import game.entities.ClientState;
+import game.entities.GameState;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -100,7 +101,7 @@ public class GameSocketServer implements GameServer, Runnable {
 					udpSocket.connect(address);
 
 					// send GameState packet
-					DatagramPacket statePacket = new DatagramPacket(sb, clientPacketSize);
+					DatagramPacket statePacket = new DatagramPacket(sb, GameState.getMaxSize());
 					udpSocket.send(statePacket);
 
 					// receive from client, clear timeouts on successful receive
@@ -127,7 +128,7 @@ public class GameSocketServer implements GameServer, Runnable {
 						continue;
 					}
 
-					System.out.println("SERVER: Received from userid: " + pairs.getKey() + " vote: " + cs.yVote);
+					//System.out.println("SERVER: Received from userid: " + pairs.getKey() + " vote: " + cs.yVote);
 					players.get(cs.userId).setVote(cs.yVote);
 				} catch (SocketTimeoutException e) {
 					u.incTimeouts();
@@ -205,9 +206,9 @@ public class GameSocketServer implements GameServer, Runnable {
 				}
 				
 				// send 1-byte ack with team info
-				// TODO this may be incorrect -- not sure if changes to sb affect the internals of ackPacket
-				//		if this needs to be fixed, add ackPacket.setData(sb);
-				sb[0] = (left_team) ? (byte) Game.TEAM_LEFT : Game.TEAM_RIGHT;
+				int team = (left_team) ? Game.TEAM_LEFT : Game.TEAM_RIGHT;
+				sb[0] = (byte) team;
+				players.get(uid).setTeam(team);
 				udpSocket.connect(sa);
 				DatagramPacket ackPacket = new DatagramPacket(sb, 1);
 				udpSocket.send(ackPacket);

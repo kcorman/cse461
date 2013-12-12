@@ -17,10 +17,10 @@ public class StateSmoother {
 	 */
 	public static void smoothState(GameState s){
 		//only smooth the state if it has been longer than the minimum update time
-				if((System.currentTimeMillis() - s.timeUpdated) > GameState.TIME_BETWEEN_UPDATES_MS){
-					s.ballX+=s.ballDx;
-					s.ballY+=s.ballDy;
-					
-				}
+		if((System.currentTimeMillis() - s.timeUpdated) > GameState.TIME_BETWEEN_UPDATES_MS){
+			s.ballX+=s.ballDx;
+			s.ballY+=s.ballDy;
+			
+		}
 	}
 }

@@ -22,17 +22,18 @@ public class Game implements Runnable {
 	public static final int TIMEOUT = -1, DISCONNECT = -2;
 	
 	// Related to ball logic
-	static final double MAX_BOUNCE_ANGLE = 3*Math.PI/4;
+	static final double MAX_BOUNCE_ANGLE = 3*Math.PI/8;
 	static final double BALL_SPEED = 25;
 	static final int SERVE_TIME = 100;			// in ms
-	static final int BALL_UPDATE_TIME = 100;	// in ms
+	
+	//static final int BALL_UPDATE_TIME = 100;	// in ms
 	private boolean isServing;
 	
 	// Data
-	private Map<Integer, User> players;
+	private Map<Integer, ? extends GamePlayer> players;
 	private GameState state;
 
-	public Game(Map<Integer, User> p) {
+	public Game(Map<Integer, ? extends GamePlayer> p) {
 		if (p == null)
 			throw new NullPointerException();
 		
@@ -44,10 +45,13 @@ public class Game implements Runnable {
 	@Override
 	public void run() {
 		while (true) {
-			updateBall();
-			updatePaddles();
+			//Synchronizing in case setState is called during this part
+			synchronized(this){
+				updateBall();
+				updatePaddles();
+			}
 			try {
-				Thread.sleep(BALL_UPDATE_TIME);
+				Thread.sleep(GameState.TIME_BETWEEN_UPDATES_MS);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -99,7 +103,7 @@ public class Game implements Runnable {
 				//bounce off right paddle
 				s.ballDx *= -1;
 				s.ballX = s.rightPaddleX-GameState.BALL_SIZE;
-				int relativeIntersectY = (s.leftPaddleY+(s.paddleHeight/2)) - (s.ballY+GameState.BALL_SIZE/2);
+				int relativeIntersectY = (s.rightPaddleY+(s.paddleHeight/2)) - (s.ballY+GameState.BALL_SIZE/2);
 				//normalize
 				double normalized = ((double)relativeIntersectY)/s.paddleHeight;
 				double angle = normalized * MAX_BOUNCE_ANGLE;
@@ -162,7 +166,7 @@ public class Game implements Runnable {
 		int leftVote = 0, rightVote = 0;
 		int leftNum = 0, rightNum = 0;
 
-		for (User p : players.values()) {
+		for (GamePlayer p : players.values()) {
 			if (p.getTeam() == TEAM_LEFT) {
 				leftVote += p.getVote();
 				leftNum++;
@@ -172,7 +176,6 @@ public class Game implements Runnable {
 				rightNum++;
 			}
 		}
-		
 		if (leftNum > 0)
 			state.leftPaddleY = leftVote/leftNum;
 		
@@ -184,7 +187,15 @@ public class Game implements Runnable {
 		return state;
 	}
 	
-	public Map<Integer, User> getPlayers() {
+	/**
+	 * Sets the current game state to the given state
+	 * @param s
+	 */
+	public synchronized void setState(GameState s){
+		state = s;
+	}
+	
+	public Map<Integer, ? extends GamePlayer> getPlayers() {
 		return players;
 	}
 	

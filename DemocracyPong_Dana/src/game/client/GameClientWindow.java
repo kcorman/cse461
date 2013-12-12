@@ -124,7 +124,6 @@ public class GameClientWindow extends JFrame implements MouseMotionListener, Gam
 	
 	public void run(){
 		while(true){
-			StateSmoother.smoothState(model.getState());
 			repaint();
 			try {
 				Thread.sleep(50);
