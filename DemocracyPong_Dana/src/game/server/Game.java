@@ -19,14 +19,15 @@ public class Game implements Runnable {
 	// Game management
 	// public enum Team { LEFT, RIGHT };
 	public static final int TEAM_LEFT = 0, TEAM_RIGHT = 1;
-	public static final int TIMEOUT = -1, DISCONNECT = -2;
+	public static final int NO_WINNER = -1;
+	static final int TIMEOUT = -1, DISCONNECT = -2;
+	private boolean running = false;
 	
 	// Related to ball logic
-	static final double MAX_BOUNCE_ANGLE = 3*Math.PI/8;
-	static final double BALL_SPEED = 25;
+	static final double MAX_BOUNCE_ANGLE = 3*Math.PI/4;
+	static final double BALL_SPEED = 30;
 	static final int SERVE_TIME = 100;			// in ms
 	
-	//static final int BALL_UPDATE_TIME = 100;	// in ms
 	private boolean isServing;
 	
 	// Data
@@ -44,7 +45,7 @@ public class Game implements Runnable {
 	
 	@Override
 	public void run() {
-		while (true) {
+		while (running) {
 			//Synchronizing in case setState is called during this part
 			synchronized(this){
 				updateBall();
@@ -143,9 +144,8 @@ public class Game implements Runnable {
 		xDir = (xDir == 0) ? -1 : 1;
 		yDir = (yDir == 0) ? -1 : 1;
 		
-		//s.ballDx = (int)(BALL_SPEED * Math.sin(Math.PI/4)) * xDir;
 		s.ballDx = (int) BALL_SPEED * xDir;
-		s.ballDy = 0;//(int)(BALL_SPEED * Math.cos(Math.PI/4)) * yDir;
+		s.ballDy = (int)(BALL_SPEED * Math.sin(Math.PI/16)) * yDir;
 		s.ballX = (s.leftPaddleX + s.rightPaddleX)/2;
 		s.ballY= (s.upperBoundsY + s.lowerBoundsY)/2;
 		isServing = false;
@@ -197,8 +197,17 @@ public class Game implements Runnable {
 		return players;
 	}
 	
-	// TODO return boolean?
-	public void start() {
+	public boolean start() {
+		if (running)
+			return false;
+
+		running = true;
 		(new Thread(this)).start();
+		return true;
+	}
+	
+	public boolean stop() {
+		running = false;
+		return true;
 	}
 }
