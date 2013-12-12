@@ -8,15 +8,13 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
-import javax.swing.JPanel;
-
 
 public class GameLobbyClient extends Thread {
 	private Socket socket;
 	private String hostname;
 	private int port;
 	
-	public GameLobbyClient(String hostname, int port, JPanel lobbyPanel) throws UnknownHostException, IOException{
+	public GameLobbyClient(String hostname, int port) throws UnknownHostException, IOException{
 		this.hostname = hostname;
 		this.port = port;
 		InetAddress addr = InetAddress.getByName(hostname);
