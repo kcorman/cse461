@@ -53,6 +53,9 @@ public class Game implements Runnable {
 					updateBall();
 					updatePaddles();
 					lastUpdate = System.currentTimeMillis();
+			
+					if (state.leftScore >= state.maxPoints || state.rightScore >= state.maxPoints)
+						this.stop();
 				}
 			}
 		}
