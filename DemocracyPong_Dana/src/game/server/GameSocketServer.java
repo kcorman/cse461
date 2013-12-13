@@ -142,6 +142,7 @@ public class GameSocketServer implements GameServer, Runnable {
 			}
 		}
 		
+		udpSocket.close();
 		game.stop();
 	}
 

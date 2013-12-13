@@ -22,11 +22,11 @@ public class Game implements Runnable {
 	public static final int NO_WINNER = -1;
 	static final int TIMEOUT = -1, DISCONNECT = -2;
 	private boolean running = false;
+	private long lastUpdate;
 	
 	// Related to ball logic
 	static final double MAX_BOUNCE_ANGLE = 3*Math.PI/4;
-	static final double BALL_SPEED = 30;
-	static final int SERVE_TIME = 100;			// in ms
+	static final double BALL_SPEED = 5;
 	
 	private boolean isServing;
 	
@@ -46,16 +46,13 @@ public class Game implements Runnable {
 	@Override
 	public void run() {
 		while (running) {
-			//Synchronizing in case setState is called during this part
-			synchronized(this){
-				updateBall();
-				updatePaddles();
-			}
-			try {
-				Thread.sleep(GameState.TIME_BETWEEN_UPDATES_MS);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+			if (System.currentTimeMillis()-lastUpdate >= GameState.TIME_BETWEEN_UPDATES_MS) {
+				//Synchronizing in case setState is called during this part
+				synchronized(this){
+					updateBall();
+					updatePaddles();
+					lastUpdate = System.currentTimeMillis();
+				}
 			}
 		}
 	}
@@ -127,27 +124,20 @@ public class Game implements Runnable {
 		 */
 		isServing = true;
 		
-		s.ballX = -50;	//offscreen
+		s.ballX = (s.leftPaddleX + s.rightPaddleX)/2;
+		s.ballY= (s.upperBoundsY + s.lowerBoundsY)/2;
 		s.ballDx = 0;
 		s.ballDy = 0;
 		
-		try {
-			Thread.sleep(SERVE_TIME);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-
 		//actual logic
-		Random rgen = new Random();
+		Random rgen = new Random(0);
 		int xDir = rgen.nextInt(2);
 		int yDir = rgen.nextInt(2);
 		xDir = (xDir == 0) ? -1 : 1;
 		yDir = (yDir == 0) ? -1 : 1;
 		
 		s.ballDx = (int) BALL_SPEED * xDir;
-		s.ballDy = (int)(BALL_SPEED * Math.sin(Math.PI/16)) * yDir;
-		s.ballX = (s.leftPaddleX + s.rightPaddleX)/2;
-		s.ballY= (s.upperBoundsY + s.lowerBoundsY)/2;
+		s.ballDy = (int)(BALL_SPEED * Math.sin(Math.PI/8)) * yDir;
 		isServing = false;
 	}
 	
@@ -190,6 +180,7 @@ public class Game implements Runnable {
 	 * @param s
 	 */
 	public synchronized void setState(GameState s){
+		lastUpdate = System.currentTimeMillis();
 		state = s;
 	}
 	

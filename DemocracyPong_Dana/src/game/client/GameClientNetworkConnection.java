@@ -102,7 +102,8 @@ public class GameClientNetworkConnection implements GameClientConnection, Runnab
 				/* ignore write failures */
 			}
 			
-			
+			if (model.isGameOver())
+				dgSocket.close();
 		}
 	}
 	

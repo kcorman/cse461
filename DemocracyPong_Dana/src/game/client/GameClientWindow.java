@@ -10,6 +10,8 @@ import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import javax.swing.JFrame;
 
@@ -17,6 +19,8 @@ public class GameClientWindow extends JFrame implements MouseMotionListener, Gam
 	private static final Dimension DEFAULT_SIZE = new Dimension(800,600);
 	private static final Font WIN_FONT = new Font("Ariel", Font.BOLD, 64);
 	private static final Font LOSE_FONT = new Font("Ariel", Font.BOLD, 64);
+	private static final Font COUNTDOWN_FONT = new Font("Ariel", Font.BOLD, 20);
+	private int countdown = 4;	// seconds after game ends
 	private GameClientModel model;
 	//booleans used to ensure that the ball bounces off of the opposite
 	//side before playing a specified sound again
@@ -58,18 +62,21 @@ public class GameClientWindow extends JFrame implements MouseMotionListener, Gam
 				g.setColor(Color.GREEN);
 				g.setFont(WIN_FONT);
 				g.drawString("You win!", getWidth()/2 - 32*7, getHeight()/2);
-			}else{
+			}else{ 
 				g.setColor(Color.RED);
 				g.setFont(LOSE_FONT);
 				g.drawString("You lose!", getWidth()/2 - 32*7, getHeight()/2);
 			}
+
+			g.setFont(COUNTDOWN_FONT);
+			g.drawString("Returning to lobby in " + countdown + " seconds...", getWidth()/2 - 32*7, 2*getHeight()/3);
 			return;
 		}
 		//Draw scores
 		g.drawString("Score: "+s.getLeftScore(), 25, 45);
 		g.drawString("Score: "+s.getRightScore(), getWidth()-75, 45);
 		//Draw real paddles
-		g.fillRect(0, s.getLeftPaddleY(), s.getPaddleWidth(), s.getPaddleHeight());
+		g.fillRect(s.getLeftPaddleX(), s.getLeftPaddleY(), s.getPaddleWidth(), s.getPaddleHeight());
 		g.fillRect(s.getRightPaddleX(), s.getRightPaddleY(), 
 				s.getPaddleWidth(), s.getPaddleHeight());
 		g.setColor(Color.yellow);
@@ -123,7 +130,7 @@ public class GameClientWindow extends JFrame implements MouseMotionListener, Gam
 	}
 	
 	public void run(){
-		while(true){
+		while(!model.isGameOver()){
 			repaint();
 			try {
 				Thread.sleep(50);
@@ -132,6 +139,26 @@ public class GameClientWindow extends JFrame implements MouseMotionListener, Gam
 				e.printStackTrace();
 			}
 		}
+		
+		final Timer timer = new Timer();
+        timer.scheduleAtFixedRate(new TimerTask() {
+            public void run() {
+            	countdown--;
+                if (countdown < 0)
+                    timer.cancel();
+            }
+        }, 0, 1000);
+        
+        while (countdown >= 0) {
+        	repaint();
+			try {
+				Thread.sleep(50);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+        }
+        this.dispose();
 	}
 	
 
@@ -144,5 +171,4 @@ public class GameClientWindow extends JFrame implements MouseMotionListener, Gam
 	public int getMouseX() {
 		return mouseX;
 	}
-
 }

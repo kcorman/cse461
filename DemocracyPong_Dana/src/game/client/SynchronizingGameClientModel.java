@@ -24,6 +24,7 @@ public class SynchronizingGameClientModel extends GameClientModel{
 	
 	@Override
 	public void setState(GameState currentState) {
+		super.setState(currentState);
 		game.setState(currentState);
 	}
 	
