@@ -21,7 +21,7 @@ public class GameState {
 	//This is ideally how often the state should be updated
 	//Storing this in a central location allows clients to implement graphics smoothing
 	//using dy/dx values
-	public static final int TIME_BETWEEN_UPDATES_MS = 50;
+	public static final int TIME_BETWEEN_UPDATES_MS = 10;
 	// Ball related fields
 	public int ballX, ballY, ballDx, ballDy;
 	//Paddle related fields
@@ -49,7 +49,7 @@ public class GameState {
 		rightPaddleX = 750;	//arbitrary, but based on the size of the game board
 		lowerBoundsY = 50;
 		upperBoundsY = 550;
-		maxPoints = 15;
+		maxPoints = 10;
 	}
 	
 	
@@ -241,9 +241,13 @@ public class GameState {
 	}
 	
 	/**
-	 * Returns the current winner
+	 * Returns the current winner.  For endless games,
+	 * this never returns a winner.
 	 */
 	public int getWinner() {
+		if (maxPoints <= 0)
+			return game.server.Game.NO_WINNER;
+
 		if (leftScore > maxPoints)
 			return game.server.Game.TEAM_LEFT;
 
@@ -251,5 +255,13 @@ public class GameState {
 			return game.server.Game.TEAM_RIGHT;
 
 		return game.server.Game.NO_WINNER;
+	}
+	
+	/**
+	 * Returns whether the game is running or not.
+	 * @return
+	 */
+	public boolean isRunning() {
+		return getWinner() == game.server.Game.NO_WINNER;
 	}
 }
