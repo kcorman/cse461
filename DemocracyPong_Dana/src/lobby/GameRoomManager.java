@@ -65,9 +65,23 @@ public class GameRoomManager extends Thread {
 				}
 				users.put(uid, u);
 			}
+			ls = new LobbyStateImpl(rooms);
+			
 			// update users
 			for (int uid : users.keySet()) {
-				processUser(uid, ls);
+				processUser(uid);
+			}
+			
+			ls = new LobbyStateImpl(rooms);
+			for (User u : users.values()) {
+				ObjectOutputStream out = u.getUserOutputStream();
+				try {
+					// update lobby info
+					out.writeObject(ServerOption.UPDATE);
+					out.writeObject(ls);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
 			}
 			try {
 				Thread.sleep(1000);
@@ -120,7 +134,7 @@ public class GameRoomManager extends Thread {
 		}
 	}
 	
-	private void processUser(int uid, LobbyState ls) {
+	private void processUser(int uid) {
 		User u = users.get(uid);
 		ObjectInputStream in = u.getUserInputStream();
 		ObjectOutputStream out = u.getUserOutputStream();
@@ -157,20 +171,28 @@ public class GameRoomManager extends Thread {
 						}
 						break;
 					case LEAVE:
-						Room lvRoom = ls.getRoomContainingUser(uid);
+						Room lvRoom = getRoomContainingUser(uid);
 						lvRoom.players.remove((Integer)uid);
 						break;
 					case START:
 						startQueue.add(u);
 						break;
 				}
-				
-				// update lobby info
-				out.writeObject(ServerOption.UPDATE);
-				out.writeObject(ls);
+
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
+	
+	public Room getRoomContainingUser(int uid) {
+		for (Room r : rooms) {
+			for (int p : r.getPlayers()) {
+				if (p == uid) {
+					return r;
+				}
+			}
+		}
+		return null;
 	}
 }
