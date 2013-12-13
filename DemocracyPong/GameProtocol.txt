@@ -1,0 +1,10 @@
+The protocol for the game is as follows
+Step 1: Client connects udp socket to server (port specified by GameLobbyServer)
+Step 2: Client sends "I'm here" consisting of a single integer (4 bytes): their id as given by the lobby
+Step 3: Server replies with ACK consisting of a single byte (1 byte) with the following meanings:
+        0: Connection successful, client is on left side
+        1: Connection successful, client is on right side
+        2: Connection failed, client should drop out
+Step 4: Server sends Game State to client consisting of a serialized GameState object
+Step 5: Client sends server a Client State consisting of a serialized ClientState object
+Step 6: Repeat steps 4-5 infinitely until server blows up?
