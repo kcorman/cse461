@@ -73,7 +73,7 @@ public class Game implements Runnable {
 			return;
 		}
 		GameState s = state;
-		if(s.ballY > s.upperBoundsY){
+		if(s.ballY + GameState.BALL_SIZE > s.upperBoundsY){
 			s.ballY = s.upperBoundsY - GameState.BALL_SIZE;
 			s.ballDy *= -1;
 		}else if(s.ballY < s.lowerBoundsY){
