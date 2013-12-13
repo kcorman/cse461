@@ -20,6 +20,7 @@ public class GameClientWindow extends JFrame implements MouseMotionListener, Gam
 	
 	private static final Font WIN_FONT = new Font("Ariel", Font.BOLD, 64);
 	private static final Font LOSE_FONT = new Font("Ariel", Font.BOLD, 64);
+	private boolean playedStart = false, playedGameOver = false;
 	private static final Font COUNTDOWN_FONT = new Font("Ariel", Font.BOLD, 20);
 	private int countdown = 4;	// seconds after game ends
 	private GameClientModel model;
@@ -63,6 +64,10 @@ public class GameClientWindow extends JFrame implements MouseMotionListener, Gam
 		g.drawRect(s.leftPaddleX - 10, s.lowerBoundsY, (s.rightPaddleX - s.leftPaddleX + 20 + s.paddleWidth), s.upperBoundsY - s.lowerBoundsY);
 
 		if(model.isGameOver()){
+			if(!playedGameOver){
+				SoundPlayer.getInstance().playSound(Sound.GAME_OVER);
+				playedGameOver = true;
+			}
 			g.setColor(Color.BLACK);
 			g.fillRect(0, 0, getWidth(), getHeight());
 			if(model.hasWon()){
@@ -101,7 +106,11 @@ public class GameClientWindow extends JFrame implements MouseMotionListener, Gam
 	 * Checks the state to see if sounds should be played
 	 */
 	private void playSounds(GameState state){
-		if(state.ballX-4 <= state.leftPaddleX+state.paddleWidth){
+		if(!playedStart){
+			SoundPlayer.getInstance().playSound(Sound.START);
+			playedStart = true;
+		}
+		else if(state.ballX-4 <= state.leftPaddleX+state.paddleWidth){
 			if(lastBounce != BounceDirection.LEFT){
 				SoundPlayer.getInstance().playSound(Sound.LEFT_PADDLE);
 				lastBounce = BounceDirection.LEFT;
@@ -122,6 +131,7 @@ public class GameClientWindow extends JFrame implements MouseMotionListener, Gam
 				lastBounce = BounceDirection.BOTTOM;
 			}
 		}
+		
 	}
 	@Override
 	public void mouseDragged(MouseEvent arg0) {

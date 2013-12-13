@@ -18,7 +18,7 @@ import javax.sound.sampled.UnsupportedAudioFileException;
  * a singleton class used for playing game sounds
  */
 public class SoundPlayer {
-	private static final String DATA_PATH = "resources/";
+	private static final String DATA_PATH = "";
 	private static final String FILE_TYPE = "wav";
 	private static final SoundPlayer instance = new SoundPlayer();
 	private Map<Sound, Clip> audioMap;
@@ -59,11 +59,13 @@ public class SoundPlayer {
 		for(Sound s : Sound.values()){
 			try {
 				Clip clip = AudioSystem.getClip();
-				clip.open(AudioSystem.getAudioInputStream(s.getFile()));
+				//clip.open(AudioSystem.getAudioInputStream(s.getFile()));
+				clip.open(AudioSystem.getAudioInputStream(SoundPlayer.class.getClassLoader() 
+						.getResource(s.getFile().getName())));
 				clip.stop();
 				audioMap.put(s, clip);
 			} catch (Exception e){
-				System.err.println("Unable to load sound: "+s.name()+"\n " +
+				System.err.println("Unable to load sound: "+s.getFile().getAbsolutePath()+"\n " +
 						"This is most likely a classpath issue.");
 			}
 		}
@@ -77,7 +79,7 @@ public class SoundPlayer {
 	 */
 	public enum Sound{
 		LEFT_PADDLE("leftpaddle"), RIGHT_PADDLE("rightpaddle"), HIT_WALL("wall"),
-			SERVE("serve"), GAME_OVER("gameover");
+			SERVE("serve"), GAME_OVER("gameover"),START("start");
 		
 		private File file;
 		private Sound(String name){
