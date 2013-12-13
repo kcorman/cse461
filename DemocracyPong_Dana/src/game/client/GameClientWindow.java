@@ -133,7 +133,7 @@ public class GameClientWindow extends JFrame implements MouseMotionListener, Gam
 		while(!model.isGameOver()){
 			repaint();
 			try {
-				Thread.sleep(50);
+				Thread.sleep(5);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -152,7 +152,7 @@ public class GameClientWindow extends JFrame implements MouseMotionListener, Gam
         while (countdown >= 0) {
         	repaint();
 			try {
-				Thread.sleep(50);
+				Thread.sleep(5);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
