@@ -25,6 +25,11 @@ public interface LobbyState extends Serializable{
 		public List<Integer> getPlayers() {
 			return Collections.unmodifiableList(players);
 		}
+
+		@Override
+		public String toString() {
+			return "Room [roomID=" + roomID + ", players=" + players + "]";
+		}
 	}
 	
 }

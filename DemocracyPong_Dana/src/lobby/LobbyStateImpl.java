@@ -24,4 +24,9 @@ public class LobbyStateImpl implements LobbyState {
 		}
 		return null;
 	}
+
+	@Override
+	public String toString() {
+		return "LobbyStateImpl [rooms=" + rooms + "]";
+	}
 }

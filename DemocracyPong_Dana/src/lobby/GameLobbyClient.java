@@ -62,6 +62,7 @@ public class GameLobbyClient extends Thread implements ConnectionBean {
 		    			break;
 		    		case UPDATE:
 		    			lobbyState = (LobbyState) in.readObject();
+		    			System.out.println("Read lobbyState: "+lobbyState);
 		    			break;
 		    	}
 		    }
