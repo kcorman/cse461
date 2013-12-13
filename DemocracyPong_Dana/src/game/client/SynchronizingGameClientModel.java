@@ -19,6 +19,7 @@ public class SynchronizingGameClientModel extends GameClientModel{
 	public SynchronizingGameClientModel(){
 		Map<Integer, lobby.User> emptyMap = Collections.emptyMap();
 		game = new Game(emptyMap);
+		game.disableScoring();
 		game.start();
 	}
 	
