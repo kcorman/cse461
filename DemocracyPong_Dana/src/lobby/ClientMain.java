@@ -9,6 +9,8 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.WindowConstants;
 
+import lobby.mocks.MockConnectionBean;
+
 public class ClientMain {
 	public static void main(String[] args) throws IOException {
 		//if (args.length != 2) {
@@ -19,23 +21,8 @@ public class ClientMain {
 		//client.start();
 		//JOptionPane op = new JOptionPane();
 		
+		ConnectionBean bean = new GameLobbyClient();
+		LobbyWindow lobby = new LobbyWindow(bean);
 		
-		JFrame frame = new JFrame("Democracy Pong Lobby");
-		String[] test = {"9", "12", "3", "6"};
-	    frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-	    frame.setPreferredSize(new Dimension(800, 600));
-	    RoomPanel roomPanel = new RoomPanel(test);
-	    LobbyPanel lobbyPanel = new LobbyPanel(test);
-	    ConnectPanel connectPanel = new ConnectPanel();
-	    frame.setLayout(new GridLayout(0, 2));
-	    JPanel leftPanel = new JPanel();
-	    leftPanel.setLayout(new BorderLayout());
-	    leftPanel.add(connectPanel, BorderLayout.NORTH);
-	    leftPanel.add(lobbyPanel, BorderLayout.CENTER);
-	    frame.add(leftPanel);
-	    frame.add(roomPanel);
-	    frame.pack();
-	    frame.setVisible(true);
-	    frame.repaint();
 	}
 }

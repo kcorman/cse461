@@ -1,8 +1,12 @@
 package lobby;
 
-import java.io.BufferedReader;
+import game.server.GameServer;
+import game.server.GameSocketServer;
+
 import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.net.DatagramSocket;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -10,31 +14,74 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 
+import lobby.DemocracyConstants.ClientOption;
+import lobby.DemocracyConstants.ServerOption;
+import lobby.LobbyState.Room;
 
-public class GameRoomManager extends Thread { 
-	Queue<User> userQueue;		/* Manager's queue of user's to process */
-	List<Room> rooms;			/* List of existing rooms */
-	
-	private enum RoomCapacity {
-		OK, FULL
-	}
+
+public class GameRoomManager extends Thread {
+	private static final int BASE_UDP_PORT = 12346;
+	private Queue<User> userQueue;		/* Manager's queue of user's to process */
+	private Queue<User> startQueue;		/* Queue of players who want to start a game */
+	private Map<Integer, User> users;	/* Map of userIDs -> user objects */
+	private List<Room> rooms;			/* List of existing rooms */
+	private int udpPort;				/* Port number for new game */
 	
 	/**
 	 * Creates and initializes the GameRoomManager.
 	 */
 	public GameRoomManager() {
-		userQueue  = new LinkedList<User>();
+		userQueue = new LinkedList<User>();
+		startQueue = new LinkedList<User>();
+		users  = new HashMap<Integer, User>();
 		rooms = new ArrayList<Room>();
+		udpPort = BASE_UDP_PORT;
 	}
 	
 	/**
 	 * Starts the GameRoomManager.
 	 */
 	public void run() {
+		LobbyState ls;
 		while (true) {
-			// process queue
+			
+			// process start game queue
+			while (!startQueue.isEmpty()) {
+				User u = startQueue.remove();
+				startGame(u);
+			}
+			
+			// process new user queue
+			ls = new LobbyStateImpl(rooms);
 			while (!userQueue.isEmpty()) {
-				processUser(userQueue.remove());
+				User u = userQueue.remove();
+				int uid = u.getUserID();
+				ObjectOutputStream out = u.getUserOutputStream();
+				try {
+					out.writeObject(ServerOption.UID);
+					out.writeInt(uid);
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+				users.put(uid, u);
+			}
+			ls = new LobbyStateImpl(rooms);
+			
+			// update users
+			for (int uid : users.keySet()) {
+				processUser(uid);
+			}
+			
+			ls = new LobbyStateImpl(rooms);
+			for (User u : users.values()) {
+				ObjectOutputStream out = u.getUserOutputStream();
+				try {
+					// update lobby info
+					out.writeObject(ServerOption.UPDATE);
+					out.writeObject(ls);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
 			}
 			try {
 				Thread.sleep(1000);
@@ -53,152 +100,99 @@ public class GameRoomManager extends Thread {
 		userQueue.add(u);
 	}
 	
-	private void processUser(User u) {
-		BufferedReader in = u.getUserInputStream();
-		PrintWriter out = u.getUserOutputStream();
-		try {
-			// Step 1: send uid, # rooms, foreach room, room#, #players
-			out.println(u.getUserID());
-			out.println(rooms.size());
-			for (Room r : rooms) {
-				out.println(r.hostID);
-				out.println(r.players.size());
+	public void startGame(User u) {
+		int uid = u.getUserID();
+		int roomIdx = -1;
+		
+		for (int i = 0; i < rooms.size(); ++i) {
+			if (rooms.get(i).roomID == uid) {
+				roomIdx = i;
+				break;
 			}
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-//			if ((userInput1 = in.readLine()) == null || (userInput2 = in.readLine()) == null) {
-//				System.out.println("User " + u.getUserID() + " failed to send a valid request");
-//				u.getUserSocket().close();
-//			} else if (rooms.isEmpty()) {
-//				// No choice, user has to host game
-//				System.out.println("userInput1 = " + userInput1 + ", userInput2 = " + userInput2);
-//				hostRoom(u, out);
-//				System.out.println("Created new room!");
-//			} else {
-//				RoomCapacity r = null;
-//				Room room = null;
-//				DemocracyConstants.UserRoomOption userOption = 
-//						DemocracyConstants.UserRoomOption.values()[Integer.parseInt(userInput1)];
-//				switch (userOption) {
-//					case HOST:
-//						hostRoom(u, out);
-//						break;
-//					case JOIN_SPECIFIC:
-//						int roomNum = Integer.parseInt(userInput2);
-//						for (int i = 0; i < rooms.size(); ++i) {
-//							room = rooms.get(i);
-//							if (room.hostID == roomNum) {
-//								r = room.joinRoom(u);
-//								sendUserStatusInfo(out, u.getUserID(), 
-//										DemocracyConstants.UserRoomOption.JOIN_SPECIFIC, room.hostID);
-//								room.sendRoomInfo();
-//							}
-//						}
-//						if (r != null)
-//							break;
-//						// else fall through to JOIN_RANDOM
-//					case JOIN_RANDOM:
-//						room = rooms.get(0);
-//						r = room.joinRoom(u);
-//						sendUserStatusInfo(out, u.getUserID(), 
-//								DemocracyConstants.UserRoomOption.JOIN_RANDOM, room.hostID);
-//						room.sendRoomInfo();
-//						break;
-//				}
-//				System.out.println("r = " + r.toString());
-//				if (r == RoomCapacity.FULL) {
-//					// TODO: hand off players to GameServer
-//					room.sendRoomReady();
-//				}
-//			}
+		}
+		if (roomIdx < 0) {
+			System.out.println("cannot start game, room id dne");
+			return;
+		}
+		Room room = rooms.remove(roomIdx);
+		Map<Integer, User> userMap = new HashMap<Integer, User>();
+		for (int id : room.players) {
+			userMap.put(id, users.get(id));
+		}
+		int port = udpPort++;
+		try {
+			DatagramSocket dgSocket = new DatagramSocket(port);
+			GameServer s = new GameSocketServer(userMap, dgSocket);
+			s.start();
+			for(User usr : userMap.values()){
+				ObjectOutputStream out = usr.getUserOutputStream();
+				out.writeObject(ServerOption.START);
+				out.writeInt(port);
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
 	
-	/* Creates a new room and sends the room info back to the user */
-	private void hostRoom(User u, PrintWriter out) {
-		int uid = u.getUserID();
-		Room r = new Room(u);
-		rooms.add(r);
-		sendUserStatusInfo(out, uid, DemocracyConstants.UserRoomOption.HOST, uid);
-		r.sendRoomInfo();
+	private void processUser(int uid) {
+		User u = users.get(uid);
+		ObjectInputStream in = u.getUserInputStream();
+		ObjectOutputStream out = u.getUserOutputStream();
+		
+		try {
+			// process any user requests
+			ClientOption opt;
+			if ((opt = (ClientOption) in.readObject()) != null) {
+				switch(opt) {
+					case HOST:
+						Room room = new Room(uid);
+						room.players.add(uid);
+						rooms.add(room);
+						break;
+					case JOIN:
+						Integer roomNum;
+						Room reqRoom;
+						if ((roomNum = in.readInt()) != null) {
+							int roomIdx = -1;
+							for (int i = 0; i < rooms.size(); ++i) {
+								if ((reqRoom = rooms.get(i)).roomID == roomNum) {
+									roomIdx = i;
+									reqRoom.players.add(uid);
+								}
+							}
+							
+							// if room dne, add to any room
+							if (roomIdx < 0)
+								rooms.get(0).players.add(uid);
+						} else {
+							System.out.println("Client did not specify room# in join room!!!"
+									+ " (added to random room)");
+							rooms.get(0).players.add(uid);
+						}
+						break;
+					case LEAVE:
+						Room lvRoom = getRoomContainingUser(uid);
+						lvRoom.players.remove((Integer)uid);
+						break;
+					case START:
+						startQueue.add(u);
+						break;
+				}
+
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 	
-	private static void sendUserStatusInfo(PrintWriter out, int uid, 
-			DemocracyConstants.UserRoomOption opt, int hid) {
-		out.println(uid);
-		out.println(opt.ordinal());
-		out.println(hid);
-	}
-	
-	/* Represents a game lobby room. The host's user id
-	 * is used as the room id.
-	 */
-	private class Room {
-		static final int MAX_PLAYERS = 4;
-		int hostID;
-		Map<Integer, User> players;
-		
-		/**
-		 * Creates a new room with the given host.
-		 * @param host the user to host the room
-		 */
-		public Room(User host) {
-			this.hostID = host.getUserID();
-			players = new HashMap<Integer, User>();
-			players.put(hostID, host);
-		}
-		
-		/**
-		 * Adds a user to this room and returns whether the room is now full.
-		 * @param u the user to add to this room
-		 * @return FULL if the room is now full, or OK if not
-		 */
-		public RoomCapacity joinRoom(User u) {
-			players.put(u.getUserID(), u);
-			if (players.size() == MAX_PLAYERS)
-				return RoomCapacity.FULL;
-			return RoomCapacity.OK;
-		}
-		
-		/**
-		 * Sends this room's information to each user in this room.
-		 */
-		public void sendRoomInfo() {
-			for (int i : players.keySet()) {
-				PrintWriter out = players.get(i).getUserOutputStream();
-				out.println(DemocracyConstants.RoomStatus.UPDATE.ordinal());
-				out.println(players.size());
-				out.println(hostID);
-				for (int j : players.keySet()) {
-					if (j != hostID)
-						out.println(j);
+	public Room getRoomContainingUser(int uid) {
+		for (Room r : rooms) {
+			for (int p : r.getPlayers()) {
+				if (p == uid) {
+					return r;
 				}
 			}
 		}
-		
-		public void sendRoomReady() {
-			for (int i : players.keySet()) {
-				PrintWriter out = players.get(i).getUserOutputStream();
-				out.println(DemocracyConstants.RoomStatus.READY.ordinal());
-			}
-		}
+		return null;
 	}
 }

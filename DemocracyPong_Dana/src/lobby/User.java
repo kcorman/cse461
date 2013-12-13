@@ -3,9 +3,8 @@ package lobby;
 import game.server.GamePlayer;
 
 import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
-import java.net.DatagramSocket;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.net.SocketAddress;
 
@@ -14,8 +13,8 @@ public class User implements GamePlayer{
 	// Lobby related fields
 	private int userID;
 	private Socket userSocket;
-	private PrintWriter out;
-	private BufferedReader in;
+	private ObjectOutputStream out;
+	private ObjectInputStream in;
 	
 	// Game related fields
 	private SocketAddress address;
@@ -27,8 +26,8 @@ public class User implements GamePlayer{
 		this.userSocket = userSocket;
 		try {
 			// using printwriter means you don't have to flush after each write
-			out = new PrintWriter(userSocket.getOutputStream(), true);
-			in = new BufferedReader(new InputStreamReader(userSocket.getInputStream()));
+			out = new ObjectOutputStream(userSocket.getOutputStream());
+			in = new ObjectInputStream(userSocket.getInputStream());
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -49,11 +48,11 @@ public class User implements GamePlayer{
 		return userSocket;
 	}
 	
-	public PrintWriter getUserOutputStream() {
+	public ObjectOutputStream getUserOutputStream() {
 		return out;
 	}
 	
-	public BufferedReader getUserInputStream() {
+	public ObjectInputStream getUserInputStream() {
 		return in;
 	}
 	
