@@ -12,6 +12,7 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.concurrent.Executors;
 
 import lobby.DemocracyConstants.ClientOption;
 import lobby.DemocracyConstants.ServerOption;
@@ -123,6 +124,7 @@ public class GameLobbyClient extends Thread implements ConnectionBean {
 		this.hostname = hostname;
 		InetAddress addr = InetAddress.getByName(hostname);
 		socket = new Socket(addr, port);
+		Executors.newSingleThreadExecutor().execute(this);
 		
 	}
 

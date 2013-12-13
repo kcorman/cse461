@@ -8,7 +8,7 @@ import java.util.Map;
 import java.util.Set;
 
 
-public interface LobbyState {
+public interface LobbyState extends Serializable{
 	
 	public List<Room> getRooms();
 	
