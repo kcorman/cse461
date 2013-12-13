@@ -62,7 +62,6 @@ public class GameLobbyClient extends Thread implements ConnectionBean {
 		    			break;
 		    		case UPDATE:
 		    			lobbyState = (LobbyState) in.readObject();
-		    			System.out.println("Read lobbyState: "+lobbyState);
 		    			break;
 		    	}
 		    }
@@ -131,6 +130,7 @@ public class GameLobbyClient extends Thread implements ConnectionBean {
 
 	@Override
 	public LobbyState getLobbyState() {
+		System.out.println("Read lobbyState: "+lobbyState);
 		return lobbyState;
 	}
 }
