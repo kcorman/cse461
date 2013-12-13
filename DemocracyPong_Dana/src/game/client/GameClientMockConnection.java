@@ -49,7 +49,7 @@ public class GameClientMockConnection implements GameClientConnection, Runnable{
 	public void run() {
 		game = new Game(players);
 		game.start();
-		while(true){
+		while(m.getState().isRunning()){
 			/*
 			 * All of the following methods internally update recentState, not m.getState()
 			 */
