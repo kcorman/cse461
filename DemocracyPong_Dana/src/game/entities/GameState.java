@@ -44,12 +44,12 @@ public class GameState {
 	public GameState(){
 		/* all values initialized to zero, this should probably be changed */
 		paddleWidth = 20;
-		paddleHeight = 128;
-		leftPaddleX = 10;	//arbitrary
+		paddleHeight = 64;
+		leftPaddleX = 50 - paddleWidth;	//arbitrary
 		rightPaddleX = 750;	//arbitrary, but based on the size of the game board
 		lowerBoundsY = 50;
 		upperBoundsY = 550;
-		maxPoints = 40;
+		maxPoints = 15;
 	}
 	
 	
@@ -240,4 +240,16 @@ public class GameState {
 		return rightScore;
 	}
 	
+	/**
+	 * Returns the current winner
+	 */
+	public int getWinner() {
+		if (leftScore > maxPoints)
+			return game.server.Game.TEAM_LEFT;
+
+		if (rightScore > maxPoints)
+			return game.server.Game.TEAM_RIGHT;
+
+		return game.server.Game.NO_WINNER;
+	}
 }
