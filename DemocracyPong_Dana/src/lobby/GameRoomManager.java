@@ -158,7 +158,7 @@ public class GameRoomManager extends Thread {
 						break;
 					case LEAVE:
 						Room lvRoom = ls.getRoomContainingUser(uid);
-						lvRoom.players.remove(uid);
+						lvRoom.players.remove((Integer)uid);
 						break;
 					case START:
 						startQueue.add(u);
