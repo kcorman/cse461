@@ -27,7 +27,8 @@ public class Game implements Runnable {
 	
 	// Related to ball logic
 	static final double MAX_BOUNCE_ANGLE = 3*Math.PI/4;
-	static final double BALL_SPEED = 5;
+	private boolean paddle_decrease_mode = true;
+	private static double BALL_SPEED = 5;
 	
 	private boolean isServing;
 	
@@ -84,6 +85,14 @@ public class Game implements Runnable {
 		if(s.ballX < s.leftPaddleX+s.paddleWidth){
 			if(s.ballY+GameState.BALL_SIZE > s.leftPaddleY && s.ballY < s.leftPaddleY + s.paddleHeight){
 				//bounce off left paddle
+				
+				if (paddle_decrease_mode) {
+					state.paddleHeight -= 5;
+					if (state.paddleHeight < GameState.BALL_SIZE + 20) paddle_decrease_mode = false;
+				}
+				else
+					s.ballDx -= 1;
+				
 				s.ballDx *= -1;
 				s.ballX = s.leftPaddleX+s.paddleWidth;
 				int relativeIntersectY = (s.leftPaddleY+(s.paddleHeight/2)) - (s.ballY+GameState.BALL_SIZE/2);
@@ -102,6 +111,13 @@ public class Game implements Runnable {
 		if(s.ballX+GameState.BALL_SIZE > s.rightPaddleX){
 			if(s.ballY+GameState.BALL_SIZE > s.rightPaddleY && s.ballY < s.rightPaddleY + s.paddleHeight){
 				//bounce off right paddle
+				if (paddle_decrease_mode) {
+					state.paddleHeight -= 5;
+					if (state.paddleHeight < GameState.BALL_SIZE + 20) paddle_decrease_mode = false;
+				}
+				else
+					s.ballDx += 1;
+				
 				s.ballDx *= -1;
 				s.ballX = s.rightPaddleX-GameState.BALL_SIZE;
 				int relativeIntersectY = (s.rightPaddleY+(s.paddleHeight/2)) - (s.ballY+GameState.BALL_SIZE/2);
@@ -127,6 +143,8 @@ public class Game implements Runnable {
 		 * Stuff related to waiting before serving
 		 */
 		isServing = true;
+		paddle_decrease_mode = true;
+		state.paddleHeight = 80;
 		
 		s.ballX = (s.leftPaddleX + s.rightPaddleX)/2;
 		s.ballY=  (s.upperBoundsY + s.lowerBoundsY)/2;

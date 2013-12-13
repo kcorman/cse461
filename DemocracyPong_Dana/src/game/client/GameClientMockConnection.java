@@ -10,7 +10,7 @@ import java.util.concurrent.Executors;
 
 public class GameClientMockConnection implements GameClientConnection, Runnable{
 	static final boolean USE_LAG_SIMULATION = true;
-	static final double LAG_FACTOR = .5;	//Percentage of states to drop
+	static final double LAG_FACTOR = .1;	//Percentage of states to drop
 	static final int USER_ID = 0;
 	static final int AI_ID = 1;
 	Map<Integer, GamePlayer> players;
@@ -20,9 +20,9 @@ public class GameClientMockConnection implements GameClientConnection, Runnable{
 	GamePlayer userPlayer;
 	//AI fields
 	GamePlayer aiPlayer;
-	int aiSpeed = 30;
+	int aiSpeed = 20;
 	boolean goingUp = false;
-	double aiNoise = 0.1;
+	double aiNoise = 0.0;
 	//
 	int serveCounter = 20; //positive number indicates waiting to serve
 	boolean isServing = false;

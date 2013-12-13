@@ -44,12 +44,12 @@ public class GameState {
 	public GameState(){
 		/* all values initialized to zero, this should probably be changed */
 		paddleWidth = 20;
-		paddleHeight = 64;
+		paddleHeight = 80;
 		leftPaddleX = 50 - paddleWidth;	//arbitrary
 		rightPaddleX = 750;	//arbitrary, but based on the size of the game board
 		lowerBoundsY = 50;
 		upperBoundsY = 550;
-		maxPoints = 5;
+		maxPoints = 10;
 	}
 	
 	
