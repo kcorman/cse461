@@ -64,7 +64,7 @@ public class RoomPanel extends JPanel implements LobbyConnectionListener{
 		}
 		
 		//Just need to update room title and players in room
-		LobbyState state = connectionBean.getState();
+		LobbyState state = connectionBean.getLobbyState();
 		Room currentRoom = state.getRoomContainingUser(connectionBean.getUserID());
 		if(currentRoom == null){
 			//Only update to the "No room state" if we haven't already
@@ -88,7 +88,7 @@ public class RoomPanel extends JPanel implements LobbyConnectionListener{
 			//get players
 			Integer[] playerArr = new Integer[currentRoom.players.size()];
 			int i = 0;
-			for(Integer playerId : currentRoom.players){
+			for(Integer playerId : currentRoom.players.keySet()){
 				playerArr[i++] = playerId;
 			}
 			playerList.setListData(playerArr);

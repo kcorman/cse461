@@ -66,7 +66,7 @@ public class LobbyPanel extends JPanel implements LobbyConnectionListener {
 		 */
 		roomList.getSelectedIndex();	//store this so we can update it
 		
-		LobbyState state = connectionBean.getState();
+		LobbyState state = connectionBean.getLobbyState();
 		Integer[] roomArr = new Integer[state.getRooms().size()];
 		for(int i = 0;i<state.getRooms().size();i++){
 			roomArr[i] = state.getRooms().get(i).roomID;
@@ -115,7 +115,7 @@ public class LobbyPanel extends JPanel implements LobbyConnectionListener {
 	
 	public void onHostButtonClick(){
 		//check to see if we're in a room already
-		LobbyState state = connectionBean.getState();
+		LobbyState state = connectionBean.getLobbyState();
 		if(state.getRoomContainingUser(connectionBean.getUserID()) == null){
 			connectionBean.hostRoom();
 		}else{
@@ -125,7 +125,7 @@ public class LobbyPanel extends JPanel implements LobbyConnectionListener {
 	}
 	
 	public void onJoinButtonClick(){
-		LobbyState state = connectionBean.getState();
+		LobbyState state = connectionBean.getLobbyState();
 		//get room to join
 		Integer val = roomList.getSelectedValue();
 		if(val == null){

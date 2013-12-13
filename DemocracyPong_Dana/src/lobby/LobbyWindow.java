@@ -39,9 +39,9 @@ public class LobbyWindow extends JFrame implements LobbyConnectionListener, Runn
 	    //Add connection listeners
 	    //This will cause the roomPanel and lobbyPanel to start updating themselves
 	    //once a connection is made
-	    connectPanel.addLobbyConnectionListener(this);
 	    connectPanel.addLobbyConnectionListener(roomPanel);
 	    connectPanel.addLobbyConnectionListener(lobbyPanel);
+	    connectPanel.addLobbyConnectionListener(this);
 	    
 	    setLayout(new GridLayout(0, 2));
 	    JPanel leftPanel = new JPanel();
