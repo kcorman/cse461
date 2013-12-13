@@ -157,25 +157,18 @@ public class GameRoomManager extends Thread {
 						rooms.add(room);
 						break;
 					case JOIN:
-						Integer roomNum;
-						Room reqRoom;
-						if ((roomNum = in.readInt()) != null) {
-							int roomIdx = -1;
+						boolean joined = false;
+						int roomNum = in.readInt();
 							for (int i = 0; i < rooms.size(); ++i) {
-								if ((reqRoom = rooms.get(i)).roomID == roomNum) {
-									roomIdx = i;
-									reqRoom.players.add(uid);
+								if (rooms.get(i).roomID == roomNum) {
+									rooms.get(i).players.add(uid);
+									joined = true;
 								}
 							}
 							
 							// if room dne, add to any room
-							if (roomIdx < 0)
+							if (!joined && !rooms.isEmpty())
 								rooms.get(0).players.add(uid);
-						} else {
-							System.out.println("Client did not specify room# in join room!!!"
-									+ " (added to random room)");
-							rooms.get(0).players.add(uid);
-						}
 						break;
 					case LEAVE:
 						Room lvRoom = getRoomContainingUser(uid);
