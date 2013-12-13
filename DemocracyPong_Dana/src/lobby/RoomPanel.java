@@ -37,6 +37,7 @@ public class RoomPanel extends JPanel implements LobbyConnectionListener{
 	//Label used for displaying that we're not connected
 	private final JLabel notConnectedLabel = new JLabel("Not connected");
 	private final JLabel notInRoom = new JLabel("You are not in a room");
+	private JScrollPane listPane;
 	
 	public RoomPanel(ConnectionBean connectionBean) {
 		this.setLayout(new BorderLayout());
@@ -69,7 +70,7 @@ public class RoomPanel extends JPanel implements LobbyConnectionListener{
 		if(currentRoom == null){
 			//Only update to the "No room state" if we haven't already
 			if(isInRoom){
-				this.remove(playerList);
+				this.remove(listPane);
 				this.add(notInRoom, BorderLayout.CENTER);
 				leaveButton.setEnabled(false);
 				startButton.setEnabled(false);
@@ -78,7 +79,7 @@ public class RoomPanel extends JPanel implements LobbyConnectionListener{
 		}else{
 			if(!isInRoom){
 				this.remove(notInRoom);
-				this.add(playerList, BorderLayout.CENTER);
+				this.add(listPane, BorderLayout.CENTER);
 				leaveButton.setEnabled(true);
 				if(currentRoom.roomID == connectionBean.getUserID()){
 					startButton.setEnabled(true);
@@ -86,12 +87,14 @@ public class RoomPanel extends JPanel implements LobbyConnectionListener{
 				isInRoom = true;
 			}
 			//get players
+			int idx = playerList.getSelectedIndex();
 			Integer[] playerArr = new Integer[currentRoom.getPlayers().size()];
 			int i = 0;
 			for(Integer playerId : currentRoom.getPlayers()){
 				playerArr[i++] = playerId;
 			}
 			playerList.setListData(playerArr);
+			playerList.setSelectedIndex(idx);
 			//Update selected index?
 		}
 	}
@@ -105,9 +108,9 @@ public class RoomPanel extends JPanel implements LobbyConnectionListener{
 		playerList.setLayoutOrientation(JList.VERTICAL);
 		playerList.setVisibleRowCount(VISIBLE_ROWS);
 
-		JScrollPane listScroller = new JScrollPane(playerList);
-		listScroller.setPreferredSize(new Dimension(300, 350));
-		this.add(listScroller, BorderLayout.CENTER);
+		listPane = new JScrollPane(playerList);
+		listPane.setPreferredSize(new Dimension(300, 350));
+		this.add(listPane, BorderLayout.CENTER);
 		
 		// add exit room/ start game buttons
 		startButton.addActionListener(new ActionListener(){

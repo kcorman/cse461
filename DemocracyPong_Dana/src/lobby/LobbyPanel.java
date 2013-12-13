@@ -64,7 +64,7 @@ public class LobbyPanel extends JPanel implements LobbyConnectionListener {
 		/*
 		 * We just need to update the roomList
 		 */
-		roomList.getSelectedIndex();	//store this so we can update it
+		int idx = roomList.getSelectedIndex();	//store this so we can update it
 		
 		LobbyState state = connectionBean.getLobbyState();
 		Integer[] roomArr = new Integer[state.getRooms().size()];
@@ -72,7 +72,7 @@ public class LobbyPanel extends JPanel implements LobbyConnectionListener {
 			roomArr[i] = state.getRooms().get(i).roomID;
 		}
 		roomList.setListData(roomArr);
-		//set selected index?
+		roomList.setSelectedIndex(idx);
 		
 		
 	}
