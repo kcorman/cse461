@@ -18,7 +18,13 @@ import lobby.DemocracyConstants.ClientOption;
 import lobby.DemocracyConstants.ServerOption;
 import lobby.LobbyState.Room;
 
-
+/**
+ * 
+ * @author danava04
+ *
+ * Lobby client that sends client requests to the server and stores updated
+ * lobby information sent by the server to be used by the front end client.
+ */
 public class GameLobbyClient extends Thread implements ConnectionBean {
 	private LobbyState lobbyState;
 	private ObjectOutputStream out;
@@ -136,7 +142,6 @@ public class GameLobbyClient extends Thread implements ConnectionBean {
 
 	@Override
 	public LobbyState getLobbyState() {
-		//System.out.println("Read lobbyState: "+lobbyState);
 		return lobbyState;
 	}
 }

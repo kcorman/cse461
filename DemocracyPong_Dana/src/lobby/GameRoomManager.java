@@ -18,10 +18,19 @@ import lobby.DemocracyConstants.ClientOption;
 import lobby.DemocracyConstants.ServerOption;
 import lobby.LobbyState.Room;
 
+/**
+ * 
+ * @author danava04
+ * Game room manager that handles user requests and frequently sends 
+ * updated lobby information to users. When the game is ready to start,
+ * this manager opens a UDP socket on port udpPort, spawns a new game
+ * server thread and passes it the socket, and finally sends the port
+ * number to all users in the corresponding game room.
+ */
 
 public class GameRoomManager extends Thread {
 	private static final int BASE_UDP_PORT = 12346;
-	private Queue<User> userQueue;		/* Manager's queue of user's to process */
+	private Queue<User> userQueue;		/* Queue of new user's to process */
 	private Queue<User> startQueue;		/* Queue of players who want to start a game */
 	private Map<Integer, User> users;	/* Map of userIDs -> user objects */
 	private List<Room> rooms;			/* List of existing rooms */
@@ -44,7 +53,6 @@ public class GameRoomManager extends Thread {
 	public void run() {
 		LobbyState ls;
 		while (true) {
-			System.out.println("Looping!");
 			// process start game queue
 			while (!startQueue.isEmpty()) {
 				User u = startQueue.remove();
@@ -66,7 +74,6 @@ public class GameRoomManager extends Thread {
 				}
 				users.put(uid, u);
 			}
-			//ls = new LobbyStateImpl(rooms);
 			
 			// update users
 			for (int uid : users.keySet()) {
@@ -74,7 +81,6 @@ public class GameRoomManager extends Thread {
 			}
 			
 			ls = new LobbyStateImpl(rooms);
-			System.out.println("lobbystate = " + ls);
 			for (User u : users.values()) {
 				ObjectOutputStream out = u.getUserOutputStream();
 				try {
@@ -146,7 +152,6 @@ public class GameRoomManager extends Thread {
 		try {
 			// process any user requests
 			ClientOption opt;
-			//System.out.println("available = " + u.getUserSocket().getInputStream().available());
 			if (u.getUserSocket().getInputStream().available() > 0) {
 				opt = (ClientOption) in.readObject();
 				System.out.println(opt);

@@ -25,7 +25,6 @@ public class User implements GamePlayer{
 		this.userID = userID;
 		this.userSocket = userSocket;
 		try {
-			// using printwriter means you don't have to flush after each write
 			out = new ObjectOutputStream(userSocket.getOutputStream());
 			in = new ObjectInputStream(userSocket.getInputStream());
 		} catch (Exception e) {
