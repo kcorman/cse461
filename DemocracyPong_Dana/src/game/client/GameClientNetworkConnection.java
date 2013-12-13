@@ -13,7 +13,7 @@ import java.nio.ByteBuffer;
 import java.util.concurrent.Executors;
 
 public class GameClientNetworkConnection implements GameClientConnection, Runnable{
-	static final boolean DEBUG_ENABLED = true;
+	static final boolean DEBUG_ENABLED = false;
 	static final int MAX_FAILURES = 20;
 	static final int SOCKET_TIMEOUT_MS = 2000;
 	String host;
