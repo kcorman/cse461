@@ -86,7 +86,7 @@ public class RoomPanel extends JPanel implements LobbyConnectionListener{
 				isInRoom = true;
 			}
 			//get players
-			Integer[] playerArr = new Integer[currentRoom.players.size()];
+			Integer[] playerArr = new Integer[currentRoom.getPlayers().size()];
 			int i = 0;
 			for(Integer playerId : currentRoom.getPlayers()){
 				playerArr[i++] = playerId;
