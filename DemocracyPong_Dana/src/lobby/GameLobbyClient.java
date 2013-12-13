@@ -46,6 +46,7 @@ public class GameLobbyClient extends Thread implements ConnectionBean {
 		    	switch(opt) {
 		    		case UID:
 		    			uid = in.readInt();
+		    			System.out.println("got uid! + " + uid);
 		    			break;
 		    		case START:
 		    			int port = in.readInt();
@@ -61,6 +62,7 @@ public class GameLobbyClient extends Thread implements ConnectionBean {
 		    			}
 		    			break;
 		    		case UPDATE:
+		    			System.out.println("Updating lobby state! ls = " + lobbyState);
 		    			lobbyState = (LobbyState) in.readObject();
 		    			break;
 		    	}
@@ -86,6 +88,7 @@ public class GameLobbyClient extends Thread implements ConnectionBean {
 		try {
 			out.writeObject(ClientOption.JOIN);
 			out.writeInt(roomID);
+			out.flush();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -95,6 +98,7 @@ public class GameLobbyClient extends Thread implements ConnectionBean {
 	public void hostRoom() {
 		try {
 			out.writeObject(ClientOption.HOST);
+			out.flush();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -104,6 +108,7 @@ public class GameLobbyClient extends Thread implements ConnectionBean {
 	public void leaveRoom() {
 		try {
 			out.writeObject(ClientOption.LEAVE);
+			out.flush();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -114,6 +119,7 @@ public class GameLobbyClient extends Thread implements ConnectionBean {
 	public void startGame() {
 		try {
 			out.writeObject(ClientOption.START);
+			out.flush();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -130,7 +136,7 @@ public class GameLobbyClient extends Thread implements ConnectionBean {
 
 	@Override
 	public LobbyState getLobbyState() {
-		System.out.println("Read lobbyState: "+lobbyState);
+		//System.out.println("Read lobbyState: "+lobbyState);
 		return lobbyState;
 	}
 }

@@ -1,7 +1,6 @@
 package lobby;
 
 import java.io.IOException;
-import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 
@@ -9,7 +8,7 @@ import java.net.Socket;
 public class GameLobbyServer {
 	
 	public static void main(String[] args) throws IOException {
-		if (args.length != 2) {
+		if (args.length != 1) {
 			System.err.println("Usage:\n\t java GameLobbyServer <hostname> <port>");
 		}
 		
@@ -17,11 +16,10 @@ public class GameLobbyServer {
 		GameRoomManager manager = new GameRoomManager();
 		manager.start();
 		
-		int port = Integer.parseInt(args[1]);
+		int port = Integer.parseInt(args[0]);
 		int userID = 0;
 		ServerSocket lobbySocket = null;
 		try {
-			InetAddress addr = InetAddress.getByName(args[0]);
 			
 			// Note: backlog = 0 -> use default backlog
 			lobbySocket = new ServerSocket(port);

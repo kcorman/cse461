@@ -44,7 +44,7 @@ public class GameRoomManager extends Thread {
 	public void run() {
 		LobbyState ls;
 		while (true) {
-			
+			System.out.println("Looping!");
 			// process start game queue
 			while (!startQueue.isEmpty()) {
 				User u = startQueue.remove();
@@ -60,6 +60,7 @@ public class GameRoomManager extends Thread {
 				try {
 					out.writeObject(ServerOption.UID);
 					out.writeInt(uid);
+					out.flush();
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
@@ -73,12 +74,15 @@ public class GameRoomManager extends Thread {
 			}
 			
 			ls = new LobbyStateImpl(rooms);
+			System.out.println("lobbystate = " + ls);
 			for (User u : users.values()) {
 				ObjectOutputStream out = u.getUserOutputStream();
 				try {
 					// update lobby info
+					System.out.println("lobbystate = " + ls);
 					out.writeObject(ServerOption.UPDATE);
 					out.writeObject(ls);
+					out.flush();
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -128,6 +132,7 @@ public class GameRoomManager extends Thread {
 				ObjectOutputStream out = usr.getUserOutputStream();
 				out.writeObject(ServerOption.START);
 				out.writeInt(port);
+				out.flush();
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -137,12 +142,14 @@ public class GameRoomManager extends Thread {
 	private void processUser(int uid) {
 		User u = users.get(uid);
 		ObjectInputStream in = u.getUserInputStream();
-		ObjectOutputStream out = u.getUserOutputStream();
 		
 		try {
 			// process any user requests
 			ClientOption opt;
-			if ((opt = (ClientOption) in.readObject()) != null) {
+			//System.out.println("available = " + u.getUserSocket().getInputStream().available());
+			if (u.getUserSocket().getInputStream().available() > 0) {
+				opt = (ClientOption) in.readObject();
+				System.out.println(opt);
 				switch(opt) {
 					case HOST:
 						Room room = new Room(uid);

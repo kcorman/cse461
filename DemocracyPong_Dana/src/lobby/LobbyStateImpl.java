@@ -7,7 +7,7 @@ public class LobbyStateImpl implements LobbyState {
 	private List<Room> rooms;
 	
 	public LobbyStateImpl(List<Room> rooms) {
-		this.rooms = Collections.unmodifiableList(rooms);
+		this.rooms = rooms;
 	}
 	
 	public List<Room> getRooms() {
