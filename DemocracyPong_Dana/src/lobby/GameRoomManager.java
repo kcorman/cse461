@@ -180,6 +180,8 @@ public class GameRoomManager extends Thread {
 					case LEAVE:
 						Room lvRoom = getRoomContainingUser(uid);
 						lvRoom.players.remove((Integer)uid);
+						if (lvRoom.players.isEmpty())
+							rooms.remove(lvRoom);
 						break;
 					case START:
 						startQueue.add(u);
