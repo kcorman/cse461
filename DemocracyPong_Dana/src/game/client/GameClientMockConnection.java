@@ -22,7 +22,7 @@ public class GameClientMockConnection implements GameClientConnection, Runnable{
 	GamePlayer aiPlayer;
 	int aiSpeed = 30;
 	boolean goingUp = false;
-	double aiNoise = .9;
+	double aiNoise = 0.0;
 	//
 	int serveCounter = 20; //positive number indicates waiting to serve
 	boolean isServing = false;
@@ -73,14 +73,19 @@ public class GameClientMockConnection implements GameClientConnection, Runnable{
 		//assume ai is right side
 		GameState s = game.getState();
 		if(s.ballY > s.getRightPaddleY()+s.paddleHeight/2){
-			if(goingUp = !(Math.random() > aiNoise));
+			goingUp = !(Math.random() > aiNoise);
 		}else if(s.ballY < s.getRightPaddleY()){
-			if(goingUp = (Math.random() > aiNoise));;
+			goingUp = (Math.random() > aiNoise);
 		}
 		if(goingUp){
-			aiPlayer.setVote(aiPlayer.getVote() + aiSpeed);
-		}else{
 			aiPlayer.setVote(aiPlayer.getVote() - aiSpeed);
+		}else{
+			aiPlayer.setVote(aiPlayer.getVote() + aiSpeed);
+		}
+		if(aiPlayer.getVote() > s.upperBoundsY){
+			aiPlayer.setVote(s.upperBoundsY);
+		}else if(aiPlayer.getVote() < s.lowerBoundsY){
+			aiPlayer.setVote(s.lowerBoundsY);
 		}
 	}
 	

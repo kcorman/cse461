@@ -159,12 +159,19 @@ public class Game implements Runnable {
 		int leftNum = 0, rightNum = 0;
 
 		for (GamePlayer p : players.values()) {
+			int vote = p.getVote();
+			if(vote > state.upperBoundsY-state.getPaddleHeight()){
+				vote = state.upperBoundsY-state.getPaddleHeight();
+			}else if(vote < state.lowerBoundsY){
+				vote = state.lowerBoundsY;
+			}
 			if (p.getTeam() == TEAM_LEFT) {
-				leftVote += p.getVote();
+				
+				leftVote += vote;
 				leftNum++;
 			}
 			else {
-				rightVote += p.getVote();
+				rightVote += vote;
 				rightNum++;
 			}
 		}
