@@ -6,9 +6,11 @@ import java.io.ObjectOutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 
 import lobby.DemocracyConstants.ClientOption;
 import lobby.DemocracyConstants.ServerOption;
+import lobby.LobbyState.Room;
 
 
 public class GameLobbyClient extends Thread implements ConnectionBean {
@@ -16,6 +18,10 @@ public class GameLobbyClient extends Thread implements ConnectionBean {
 	private ObjectOutputStream out;
 	private Socket socket;
 	private int uid;
+	
+	public GameLobbyClient() {
+		lobbyState = new LobbyStateImpl(new ArrayList<Room>());
+	}
 	
 	public void run() {
 		try {
