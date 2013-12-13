@@ -21,7 +21,7 @@ public class ClientMain {
 		//client.start();
 		//JOptionPane op = new JOptionPane();
 		
-		ConnectionBean bean = new MockConnectionBean();
+		ConnectionBean bean = new GameLobbyClient();
 		LobbyWindow lobby = new LobbyWindow(bean);
 		
 	}
