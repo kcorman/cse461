@@ -16,7 +16,8 @@ import java.util.TimerTask;
 import javax.swing.JFrame;
 
 public class GameClientWindow extends JFrame implements MouseMotionListener, GameMousePositionSource{
-	private static final Dimension DEFAULT_SIZE = new Dimension(800,600);
+	private static final Dimension DEFAULT_SIZE = new Dimension(800,575);
+	
 	private static final Font WIN_FONT = new Font("Ariel", Font.BOLD, 64);
 	private static final Font LOSE_FONT = new Font("Ariel", Font.BOLD, 64);
 	private static final Font COUNTDOWN_FONT = new Font("Ariel", Font.BOLD, 20);
@@ -56,8 +57,14 @@ public class GameClientWindow extends JFrame implements MouseMotionListener, Gam
 		g.setColor(Color.BLACK);
 		g.fillRect(0, 0, getWidth(), getHeight());
 		g.setColor(Color.white);
+
 		GameState s = model.getState();
+		g.drawLine(getWidth()/2, s.upperBoundsY, getWidth()/2, s.lowerBoundsY);
+		g.drawRect(s.leftPaddleX - 10, s.lowerBoundsY, (s.rightPaddleX - s.leftPaddleX + 20 + s.paddleWidth), s.upperBoundsY - s.lowerBoundsY);
+
 		if(model.isGameOver()){
+			g.setColor(Color.BLACK);
+			g.fillRect(0, 0, getWidth(), getHeight());
 			if(model.hasWon()){
 				g.setColor(Color.GREEN);
 				g.setFont(WIN_FONT);
