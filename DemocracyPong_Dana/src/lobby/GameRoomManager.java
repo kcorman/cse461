@@ -101,12 +101,16 @@ public class GameRoomManager extends Thread {
 			return;
 		}
 		Room room = rooms.remove(roomIdx);
+		Map<Integer, User> userMap = new HashMap<Integer, User>();
+		for (int id : room.players) {
+			userMap.put(id, users.get(id));
+		}
 		int port = udpPort++;
 		try {
 			DatagramSocket dgSocket = new DatagramSocket(port);
-			GameServer s = new GameSocketServer(room.players, dgSocket);
+			GameServer s = new GameSocketServer(userMap, dgSocket);
 			s.start();
-			for(User usr : room.players.values()){
+			for(User usr : userMap.values()){
 				ObjectOutputStream out = usr.getUserOutputStream();
 				out.writeObject(ServerOption.START);
 				out.writeInt(port);
@@ -128,7 +132,7 @@ public class GameRoomManager extends Thread {
 				switch(opt) {
 					case HOST:
 						Room room = new Room(uid);
-						room.players.put(uid, u);
+						room.players.add(uid);
 						rooms.add(room);
 						break;
 					case JOIN:
@@ -139,17 +143,17 @@ public class GameRoomManager extends Thread {
 							for (int i = 0; i < rooms.size(); ++i) {
 								if ((reqRoom = rooms.get(i)).roomID == roomNum) {
 									roomIdx = i;
-									reqRoom.players.put(uid, u);
+									reqRoom.players.add(uid);
 								}
 							}
 							
 							// if room dne, add to any room
 							if (roomIdx < 0)
-								rooms.get(0).players.put(uid, u);
+								rooms.get(0).players.add(uid);
 						} else {
 							System.out.println("Client did not specify room# in join room!!!"
 									+ " (added to random room)");
-							rooms.get(0).players.put(uid, u);
+							rooms.get(0).players.add(uid);
 						}
 						break;
 					case LEAVE:
