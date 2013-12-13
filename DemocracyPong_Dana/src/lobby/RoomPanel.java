@@ -37,6 +37,7 @@ public class RoomPanel extends JPanel implements LobbyConnectionListener{
 	//Label used for displaying that we're not connected
 	private final JLabel notConnectedLabel = new JLabel("Not connected");
 	private final JLabel notInRoom = new JLabel("You are not in a room");
+	private JLabel roomNameLabel;
 	private JScrollPane listPane;
 	
 	public RoomPanel(ConnectionBean connectionBean) {
@@ -71,6 +72,7 @@ public class RoomPanel extends JPanel implements LobbyConnectionListener{
 			//Only update to the "No room state" if we haven't already
 			if(isInRoom){
 				this.remove(listPane);
+				//this.remove(roomNameLabel);
 				this.add(notInRoom, BorderLayout.CENTER);
 				leaveButton.setEnabled(false);
 				startButton.setEnabled(false);
@@ -79,6 +81,8 @@ public class RoomPanel extends JPanel implements LobbyConnectionListener{
 		}else{
 			if(!isInRoom){
 				this.remove(notInRoom);
+				//roomNameLabel.setText("Room #: "+currentRoom.roomID);
+				//this.add(roomNameLabel, BorderLayout.CENTER);
 				this.add(listPane, BorderLayout.CENTER);
 				leaveButton.setEnabled(true);
 				if(currentRoom.roomID == connectionBean.getUserID()){
@@ -127,6 +131,8 @@ public class RoomPanel extends JPanel implements LobbyConnectionListener{
 		buttonPanel.setLayout(new GridLayout(2, 0));
 		buttonPanel.add(leaveButton);
 		buttonPanel.add(startButton);
+		leaveButton.setEnabled(false);
+		startButton.setEnabled(false);
 		this.add(buttonPanel, BorderLayout.SOUTH);
 		connected = true;
 
