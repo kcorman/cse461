@@ -9,6 +9,8 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.WindowConstants;
 
+import lobby.mocks.MockConnectionBean;
+
 public class ClientMain {
 	public static void main(String[] args) throws IOException {
 		//if (args.length != 2) {
@@ -19,8 +21,8 @@ public class ClientMain {
 		//client.start();
 		//JOptionPane op = new JOptionPane();
 		
-		
-		LobbyWindow lobby = new LobbyWindow();
+		ConnectionBean bean = new MockConnectionBean();
+		LobbyWindow lobby = new LobbyWindow(bean);
 		
 	}
 }
