@@ -58,6 +58,9 @@ public class GameSocketServer implements GameServer, Runnable {
 	 */
 	public GameSocketServer(Map<Integer, User> players, DatagramSocket udpSocket) {
 		this.players = new ConcurrentHashMap<Integer, User>(players);
+		for (User u : players.values())
+			u.setAddress(null);
+
 		this.udpSocket = udpSocket;
 
 		game = new Game(players);
