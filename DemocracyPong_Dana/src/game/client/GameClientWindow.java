@@ -144,12 +144,12 @@ public class GameClientWindow extends JFrame implements MouseMotionListener, Gam
         timer.scheduleAtFixedRate(new TimerTask() {
             public void run() {
             	countdown--;
-                if (countdown < 0)
+                if (countdown <= 0)
                     timer.cancel();
             }
         }, 0, 1000);
         
-        while (countdown >= 0) {
+        while (countdown > 0) {
         	repaint();
 			try {
 				Thread.sleep(5);
