@@ -22,6 +22,7 @@ public class Game implements Runnable {
 	public static final int NO_WINNER = -1;
 	static final int TIMEOUT = -1, DISCONNECT = -2;
 	private boolean running = false;
+	private boolean scoring = true;	// enable/disable scoring
 	private long lastUpdate;
 	
 	// Related to ball logic
@@ -90,7 +91,7 @@ public class Game implements Runnable {
 				s.ballDy = (int)(BALL_SPEED *-Math.sin(angle));
 			}
 			else{
-				s.rightScore++;
+				if (scoring) s.rightScore++;
 				serveBall();
 			}
 		}
@@ -107,7 +108,7 @@ public class Game implements Runnable {
 				// s.ballDx = (int)-Math.abs((BALL_SPEED *Math.cos(angle)));
 				s.ballDy = (int)(BALL_SPEED *-Math.sin(angle));
 			}else{
-				s.leftScore++;
+				if (scoring) s.leftScore++;
 				serveBall();
 			}
 		}
@@ -125,7 +126,7 @@ public class Game implements Runnable {
 		isServing = true;
 		
 		s.ballX = (s.leftPaddleX + s.rightPaddleX)/2;
-		s.ballY= (s.upperBoundsY + s.lowerBoundsY)/2;
+		s.ballY=  (s.upperBoundsY + s.lowerBoundsY)/2;
 		s.ballDx = 0;
 		s.ballDy = 0;
 		
@@ -186,6 +187,10 @@ public class Game implements Runnable {
 	
 	public Map<Integer, ? extends GamePlayer> getPlayers() {
 		return players;
+	}
+	
+	public void disableScoring() {
+		scoring = false;
 	}
 	
 	public boolean start() {
