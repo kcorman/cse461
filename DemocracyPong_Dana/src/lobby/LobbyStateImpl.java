@@ -6,13 +6,19 @@ import java.util.List;
 
 public class LobbyStateImpl implements LobbyState {
 	private List<Room> rooms;
-	
+	public LobbyState deepCopy(){
+		LobbyStateImpl copy = new LobbyStateImpl(new ArrayList<Room>());
+		for(Room r : rooms){
+			copy.rooms.add(r.deepCopy());
+		}
+		return copy;
+	}
 	public LobbyStateImpl(List<Room> rooms) {
 		this.rooms = new ArrayList<Room>(rooms);
 	}
 	
 	public List<Room> getRooms() {
-		return Collections.unmodifiableList(rooms);
+		return rooms;
 	}
 	
 	public Room getRoomContainingUser(int uid) {

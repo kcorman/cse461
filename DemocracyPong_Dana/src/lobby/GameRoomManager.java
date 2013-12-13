@@ -66,7 +66,7 @@ public class GameRoomManager extends Thread {
 				}
 				users.put(uid, u);
 			}
-			ls = new LobbyStateImpl(rooms);
+			//ls = new LobbyStateImpl(rooms);
 			
 			// update users
 			for (int uid : users.keySet()) {
@@ -81,7 +81,7 @@ public class GameRoomManager extends Thread {
 					// update lobby info
 					System.out.println("lobbystate = " + ls);
 					out.writeObject(ServerOption.UPDATE);
-					out.writeObject(ls);
+					out.writeObject(ls.deepCopy());
 					out.flush();
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -120,7 +120,7 @@ public class GameRoomManager extends Thread {
 		}
 		Room room = rooms.remove(roomIdx);
 		Map<Integer, User> userMap = new HashMap<Integer, User>();
-		for (int id : room.players) {
+		for (int id : room.getPlayers()) {
 			userMap.put(id, users.get(id));
 		}
 		int port = udpPort++;
@@ -153,27 +153,34 @@ public class GameRoomManager extends Thread {
 				switch(opt) {
 					case HOST:
 						Room room = new Room(uid);
-						room.players.add(uid);
+						room.addPlayer(uid);
 						rooms.add(room);
 						break;
 					case JOIN:
-						boolean joined = false;
-						int roomNum = in.readInt();
+						Integer roomNum;
+						Room reqRoom;
+						if ((roomNum = in.readInt()) != null) {
+							int roomIdx = -1;
 							for (int i = 0; i < rooms.size(); ++i) {
-								if (rooms.get(i).roomID == roomNum) {
-									rooms.get(i).players.add(uid);
-									joined = true;
+								if ((reqRoom = rooms.get(i)).roomID == roomNum) {
+									roomIdx = i;
+									reqRoom.addPlayer(uid);
 								}
 							}
 							
 							// if room dne, add to any room
-							if (!joined && !rooms.isEmpty())
-								rooms.get(0).players.add(uid);
+							if (roomIdx < 0)
+								rooms.get(0).addPlayer(uid);
+						} else {
+							System.out.println("Client did not specify room# in join room!!!"
+									+ " (added to random room)");
+							rooms.get(0).addPlayer(uid);
+						}
 						break;
 					case LEAVE:
 						Room lvRoom = getRoomContainingUser(uid);
-						lvRoom.players.remove((Integer)uid);
-						if (lvRoom.players.isEmpty())
+						lvRoom.removePlayer((Integer)uid);
+						if (lvRoom.getPlayers().isEmpty())
 							rooms.remove(lvRoom);
 						break;
 					case START:
