@@ -49,7 +49,7 @@ public class GameState {
 		rightPaddleX = 750;	//arbitrary, but based on the size of the game board
 		lowerBoundsY = 50;
 		upperBoundsY = 550;
-		maxPoints = 1;
+		maxPoints = 5;
 	}
 	
 	
