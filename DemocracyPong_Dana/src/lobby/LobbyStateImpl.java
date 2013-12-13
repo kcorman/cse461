@@ -1,5 +1,6 @@
 package lobby;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -7,7 +8,7 @@ public class LobbyStateImpl implements LobbyState {
 	private List<Room> rooms;
 	
 	public LobbyStateImpl(List<Room> rooms) {
-		this.rooms = rooms;
+		this.rooms = new ArrayList<Room>(rooms);
 	}
 	
 	public List<Room> getRooms() {
