@@ -42,8 +42,10 @@ public class ConnectPanel extends JPanel {
 					}
 				} catch (UnknownHostException e) {
 					showErrorDialog(HOST_ERR);
+					e.printStackTrace();
 				} catch (Exception e) {
 					showErrorDialog(OTHER_ERR);
+					e.printStackTrace();
 				}
 			}
 		});

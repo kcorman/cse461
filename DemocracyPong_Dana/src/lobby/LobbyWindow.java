@@ -77,6 +77,7 @@ public class LobbyWindow extends JFrame implements LobbyConnectionListener, Runn
 			if(connected){
 				lobbyPanel.syncWithRemote();
 				roomPanel.syncWithRemote();
+				repaint();
 			}
 			try {
 				Thread.sleep(THREAD_SLEEP_TIME);

@@ -24,7 +24,7 @@ public class GameLobbyServer {
 			InetAddress addr = InetAddress.getByName(args[0]);
 			
 			// Note: backlog = 0 -> use default backlog
-			lobbySocket = new ServerSocket(port, 0, addr);
+			lobbySocket = new ServerSocket(port);
 			
 			while (true) {
 				Socket clientSocket = lobbySocket.accept();
