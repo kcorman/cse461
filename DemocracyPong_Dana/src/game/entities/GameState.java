@@ -49,7 +49,7 @@ public class GameState {
 		rightPaddleX = 750;	//arbitrary, but based on the size of the game board
 		lowerBoundsY = 50;
 		upperBoundsY = 550;
-		maxPoints = 10;
+		maxPoints = 1;
 	}
 	
 	
@@ -248,10 +248,10 @@ public class GameState {
 		if (maxPoints <= 0)
 			return game.server.Game.NO_WINNER;
 
-		if (leftScore > maxPoints)
+		if (leftScore >= maxPoints)
 			return game.server.Game.TEAM_LEFT;
 
-		if (rightScore > maxPoints)
+		if (rightScore >= maxPoints)
 			return game.server.Game.TEAM_RIGHT;
 
 		return game.server.Game.NO_WINNER;
