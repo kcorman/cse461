@@ -15,7 +15,7 @@ import java.util.concurrent.Executors;
 public class GameClientNetworkConnection implements GameClientConnection, Runnable{
 	static final boolean DEBUG_ENABLED = true;
 	static final int MAX_FAILURES = 20;
-	static final int SOCKET_TIMEOUT_MS = 500;
+	static final int SOCKET_TIMEOUT_MS = 2000;
 	String host;
 	int port;
 	int userId;
@@ -50,7 +50,7 @@ public class GameClientNetworkConnection implements GameClientConnection, Runnab
 			dgSocket = new DatagramSocket();
 			dgSocket.connect(InetAddress.getByName(host), port);
 			try {
-				dgSocket.setSoTimeout(500);
+				dgSocket.setSoTimeout(SOCKET_TIMEOUT_MS);
 			} catch (SocketException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();

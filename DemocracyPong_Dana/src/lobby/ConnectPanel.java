@@ -15,6 +15,7 @@ import javax.swing.JTextField;
 public class ConnectPanel extends JPanel {
 	private static final String HOST_STR = "Hostname";
 	private static final String PORT_STR = "Port";
+	private static final String DEFAULT_PORT = "34543";
 	private static final String CONNECT_STR = "Connect";
 	
 	private static final String HOST_ERR = "Invalid hostname!";
@@ -27,8 +28,8 @@ public class ConnectPanel extends JPanel {
 	public ConnectPanel(final ConnectionBean connectionBean) {
 		connectionListeners = new ArrayList<LobbyConnectionListener>();
 		hostField = new JTextField(HOST_STR, 30);
-		portField = new JTextField(PORT_STR, 5);
-		JButton connectButton = new JButton(CONNECT_STR);
+		portField = new JTextField(DEFAULT_PORT, 5);
+		final JButton connectButton = new JButton(CONNECT_STR);
 		connectButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent event) {
 				try {
@@ -40,6 +41,7 @@ public class ConnectPanel extends JPanel {
 					for(LobbyConnectionListener l : connectionListeners){
 						l.onSuccessfulConnect();
 					}
+					connectButton.setEnabled(false);
 				} catch (UnknownHostException e) {
 					showErrorDialog(HOST_ERR);
 					e.printStackTrace();
