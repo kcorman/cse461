@@ -1,16 +1,13 @@
 package lobby;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
-import lobby.LobbyState.Room;
 
 public class LobbyStateImpl implements LobbyState {
 	private List<Room> rooms;
 	
-	public LobbyStateImpl() {
-		rooms = new ArrayList<Room>();
+	public LobbyStateImpl(List<Room> rooms) {
+		this.rooms = Collections.unmodifiableList(rooms);
 	}
 	
 	public List<Room> getRooms() {

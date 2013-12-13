@@ -5,7 +5,7 @@ import java.net.UnknownHostException;
 
 public interface ConnectionBean {
 	
-	public LobbyState getState();
+	public LobbyState getLobbyState();
 	
 	public int getUserID();
 	

@@ -1,9 +1,11 @@
 package lobby;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 
 public interface LobbyState {
@@ -14,15 +16,16 @@ public interface LobbyState {
 	
 	public static class Room implements Serializable {
 		int roomID;		// same as hostID
-		List<Integer> players;
+		Map<Integer, User> players;
 		
 		public Room(int roomID) {
 			this.roomID = roomID;
-			players = new ArrayList<Integer>();
+			//players = new ArrayList<Integer>();
+			players = new HashMap<Integer, User>();
 		}
 		
-		public List<Integer> getPlayers() {
-			return Collections.unmodifiableList(players);
+		public Set<Integer> getPlayers() {
+			return Collections.unmodifiableSet(players.keySet());
 		}
 	}
 	
