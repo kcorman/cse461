@@ -22,7 +22,7 @@ public class GameClientMockConnection implements GameClientConnection, Runnable{
 	GamePlayer aiPlayer;
 	int aiSpeed = 30;
 	boolean goingUp = false;
-	double aiNoise = 0.0;
+	double aiNoise = 0.1;
 	//
 	int serveCounter = 20; //positive number indicates waiting to serve
 	boolean isServing = false;
