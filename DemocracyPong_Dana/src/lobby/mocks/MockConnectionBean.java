@@ -17,12 +17,7 @@ public class MockConnectionBean implements ConnectionBean{
 	LobbyState state;
 	
 	public MockConnectionBean(){
-		state = new LobbyStateImpl();
-	}
-	@Override
-	public LobbyState getState() {
-		// TODO Auto-generated method stub
-		return null;
+		state = new LobbyStateImpl(null);
 	}
 
 	@Override
@@ -60,6 +55,11 @@ public class MockConnectionBean implements ConnectionBean{
 			IOException {
 		// TODO Auto-generated method stub
 		
+	}
+	@Override
+	public LobbyState getLobbyState() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }
