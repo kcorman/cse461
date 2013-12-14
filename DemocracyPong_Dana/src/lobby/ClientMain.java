@@ -1,15 +1,6 @@
 package lobby;
 
-import java.awt.BorderLayout;
-import java.awt.Dimension;
-import java.awt.GridLayout;
 import java.io.IOException;
-
-import javax.swing.JFrame;
-import javax.swing.JPanel;
-import javax.swing.WindowConstants;
-
-import lobby.mocks.MockConnectionBean;
 
 public class ClientMain {
 	public static void main(String[] args) throws IOException {
