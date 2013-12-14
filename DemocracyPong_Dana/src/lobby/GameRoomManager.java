@@ -34,6 +34,7 @@ public class GameRoomManager extends Thread {
 	private Queue<User> startQueue;		/* Queue of players who want to start a game */
 	private Map<Integer, User> users;	/* Map of userIDs -> user objects */
 	private List<Room> rooms;			/* List of existing rooms */
+	private Map<Integer, String> userNames; /* Map from userIDs -> user display names */
 	private int udpPort;				/* Port number for new game */
 	
 	/**
@@ -43,6 +44,7 @@ public class GameRoomManager extends Thread {
 		userQueue = new LinkedList<User>();
 		startQueue = new LinkedList<User>();
 		users  = new HashMap<Integer, User>();
+		userNames = new HashMap<Integer, String>();
 		rooms = new ArrayList<Room>();
 		udpPort = BASE_UDP_PORT;
 	}
@@ -81,6 +83,7 @@ public class GameRoomManager extends Thread {
 			}
 			
 			ls = new LobbyStateImpl(rooms);
+			ls.setUserNames(userNames);
 			for (User u : users.values()) {
 				ObjectOutputStream out = u.getUserOutputStream();
 				try {
@@ -191,6 +194,10 @@ public class GameRoomManager extends Thread {
 					case START:
 						startQueue.add(u);
 						break;
+					case SET_NAME:
+						String name = (String) in.readObject();
+						u.setName(name);	// we don't really use this
+						userNames.put(u.getUserID(), name);
 				}
 
 			}

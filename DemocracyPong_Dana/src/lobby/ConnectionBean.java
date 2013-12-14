@@ -22,5 +22,11 @@ public interface ConnectionBean {
 	
 	public void startGame();
 	
+	/**
+	 * Attempts to set the current user's username to the given name
+	 * this does not guarantee that the name will be set
+	 */
+	public void setUserName(String name);
+	
 	public void connect(String hostname, int port) throws UnknownHostException, IOException;
 }

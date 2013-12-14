@@ -12,7 +12,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
-public class ConnectPanel extends JPanel {
+public class ConnectPanel extends JPanel implements LobbyConnectionListener{
 	private static final String HOST_STR = "Hostname";
 	private static final String PORT_STR = "Port";
 	private static final String DEFAULT_PORT = "34543";
@@ -22,14 +22,19 @@ public class ConnectPanel extends JPanel {
 	private static final String OTHER_ERR = "Unable to connect, please try again!";
 	private JTextField hostField;
 	private JTextField portField;
+	private JTextField nameField = new JTextField("username");
+	private final JButton connectButton;
+	private JButton setNameButton;
+	private ConnectionBean connectionBean;
 
 	//For notifying other components when a connection is successful
 	private final List<LobbyConnectionListener> connectionListeners;
 	public ConnectPanel(final ConnectionBean connectionBean) {
 		connectionListeners = new ArrayList<LobbyConnectionListener>();
+		this.connectionBean = connectionBean;
 		hostField = new JTextField(HOST_STR, 30);
 		portField = new JTextField(DEFAULT_PORT, 5);
-		final JButton connectButton = new JButton(CONNECT_STR);
+		connectButton = new JButton(CONNECT_STR);
 		connectButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent event) {
 				try {
@@ -72,5 +77,21 @@ public class ConnectPanel extends JPanel {
 		JOptionPane.showMessageDialog(this, msg);
 		hostField.setText(HOST_STR);
 		portField.setText(PORT_STR);
+	}
+
+	@Override
+	public void onSuccessfulConnect() {
+		
+		this.remove(connectButton);
+		this.remove(hostField);
+		this.remove(portField);
+		this.add(nameField);
+		setNameButton = new JButton("Set Username");
+		setNameButton.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent arg0) {
+				connectionBean.setUserName(nameField.getText());
+			}
+		});
+		this.add(setNameButton);
 	}
 }

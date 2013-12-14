@@ -20,6 +20,7 @@ public class User implements GamePlayer{
 	private SocketAddress address;
 	private int yVote;
 	private int team;
+	private String name = null;
 	
 	public User(int userID, Socket userSocket) {
 		this.userID = userID;
@@ -77,5 +78,13 @@ public class User implements GamePlayer{
 	
 	public SocketAddress getAddress() {
 		return address;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
 	}
 }

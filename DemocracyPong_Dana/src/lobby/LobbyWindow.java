@@ -42,6 +42,7 @@ public class LobbyWindow extends JFrame implements LobbyConnectionListener, Runn
 	    connectPanel.addLobbyConnectionListener(roomPanel);
 	    connectPanel.addLobbyConnectionListener(lobbyPanel);
 	    connectPanel.addLobbyConnectionListener(this);
+	    connectPanel.addLobbyConnectionListener(connectPanel);
 	    
 	    setLayout(new GridLayout(0, 2));
 	    JPanel leftPanel = new JPanel();

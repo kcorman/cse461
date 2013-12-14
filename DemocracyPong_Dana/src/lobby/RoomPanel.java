@@ -31,7 +31,7 @@ public class RoomPanel extends JPanel implements LobbyConnectionListener{
 	private String uid;
 	private JLabel roomTitle;
 	private String roomNum;
-	private JList<Integer> playerList;
+	private JList<String> playerList;
 	JButton leaveButton = new JButton(LEAVE_ROOM);
 	JButton startButton = new JButton(START_GAME);
 	//Label used for displaying that we're not connected
@@ -92,10 +92,13 @@ public class RoomPanel extends JPanel implements LobbyConnectionListener{
 			}
 			//get players
 			int idx = playerList.getSelectedIndex();
-			Integer[] playerArr = new Integer[currentRoom.getPlayers().size()];
+			String[] playerArr = new String[currentRoom.getPlayers().size()];
 			int i = 0;
 			for(Integer playerId : currentRoom.getPlayers()){
-				playerArr[i++] = playerId;
+				String playerName = "Player: "+playerId;
+				String userName = state.getUserNames().get(playerId);
+				if(userName != null) playerName = userName;
+				playerArr[i++] = playerName;
 			}
 			playerList.setListData(playerArr);
 			playerList.setSelectedIndex(idx);
@@ -107,7 +110,7 @@ public class RoomPanel extends JPanel implements LobbyConnectionListener{
 	public void onSuccessfulConnect() {
 		// list of players
 		this.remove(notConnectedLabel);
-		playerList = new JList<Integer>();		// add action listener
+		playerList = new JList<String>();		// add action listener
 		playerList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		playerList.setLayoutOrientation(JList.VERTICAL);
 		playerList.setVisibleRowCount(VISIBLE_ROWS);

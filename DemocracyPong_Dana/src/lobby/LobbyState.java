@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 
@@ -18,6 +19,9 @@ public interface LobbyState extends Serializable{
 	public List<Room> getRooms();
 	
 	public Room getRoomContainingUser(int uid);
+	
+	public Map<Integer, String> getUserNames();
+	public void setUserNames(Map<Integer, String> names);
 	
 	public static class Room implements Serializable {
 		int roomID;		// same as hostID

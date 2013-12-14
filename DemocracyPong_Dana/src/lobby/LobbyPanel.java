@@ -32,8 +32,9 @@ public class LobbyPanel extends JPanel implements LobbyConnectionListener {
 	private static final String ROOMS_AVAILABLE = "Available Rooms";
 	private static final String HOST_ROOM = "Host Room";
 	private static final String JOIN_GAME = "Join Room";
+	private static final String ROOM_NAME = "%d: %s's Room (%d)";
 	private JLabel lobbyTitle;
-	private JList<Integer> roomList;
+	private JList<String> roomList;
 	private final JLabel notConnectedLabel = new JLabel("Not connected");
 	private JButton joinButton;
 	private JButton hostButton;
@@ -67,9 +68,12 @@ public class LobbyPanel extends JPanel implements LobbyConnectionListener {
 		int idx = roomList.getSelectedIndex();	//store this so we can update it
 		
 		LobbyState state = connectionBean.getLobbyState();
-		Integer[] roomArr = new Integer[state.getRooms().size()];
+		String[] roomArr = new String[state.getRooms().size()];
 		for(int i = 0;i<state.getRooms().size();i++){
-			roomArr[i] = state.getRooms().get(i).roomID;
+			Integer id = state.getRooms().get(i).roomID;
+			roomArr[i] = String.format(ROOM_NAME, 
+					id, state.getUserNames().get(id), 
+					state.getRooms().get(i).getPlayers().size());
 		}
 		roomList.setListData(roomArr);
 		roomList.setSelectedIndex(idx);
@@ -81,7 +85,7 @@ public class LobbyPanel extends JPanel implements LobbyConnectionListener {
 	public void onSuccessfulConnect() {
 		this.remove(notConnectedLabel);
 		// list of players
-		roomList = new JList<Integer>();		// add action listener
+		roomList = new JList<String>();		// add action listener
 		roomList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		roomList.setLayoutOrientation(JList.VERTICAL);
 		roomList.setVisibleRowCount(VISIBLE_ROWS);
@@ -127,17 +131,25 @@ public class LobbyPanel extends JPanel implements LobbyConnectionListener {
 	public void onJoinButtonClick(){
 		LobbyState state = connectionBean.getLobbyState();
 		//get room to join
-		Integer val = roomList.getSelectedValue();
+		Integer val = Integer.parseInt(roomList.getSelectedValue().split(":")[0]);
 		if(val == null){
 			JOptionPane.showMessageDialog(this,
 					"You have not selected a room to join.");
 		}else{
+			//If user is already in this room, don't let them join again
+			int uid = connectionBean.getUserID();
+			if(state.getRoomContainingUser(uid) != null && 
+					state.getRoomContainingUser(uid).roomID == val){
+				JOptionPane.showMessageDialog(this,"You are already in that room.");
+				return;
+			}
 			//check to make sure room exists
 			boolean found = false;
 			for(Room r : state.getRooms()){
 				found |= (r.roomID == val);
 			}
 			if(found){
+				connectionBean.leaveRoom();
 				connectionBean.joinRoom(val);
 			}else{
 				JOptionPane.showMessageDialog(this,

@@ -144,4 +144,15 @@ public class GameLobbyClient extends Thread implements ConnectionBean {
 	public LobbyState getLobbyState() {
 		return lobbyState;
 	}
+
+	@Override
+	public void setUserName(String name) {
+		try {
+			out.writeObject(ClientOption.SET_NAME);
+			out.writeObject(new String(name));
+			out.flush();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
 }
