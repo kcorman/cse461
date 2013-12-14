@@ -23,6 +23,7 @@ public interface LobbyState extends Serializable{
 	public Map<Integer, String> getUserNames();
 	public void setUserNames(Map<Integer, String> names);
 	
+	@SuppressWarnings("serial")
 	public static class Room implements Serializable {
 		int roomID;		// same as hostID
 		private List<Integer> players;

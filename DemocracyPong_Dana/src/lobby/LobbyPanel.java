@@ -5,7 +5,6 @@ import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.List;
 
 import javax.swing.JButton;
 import javax.swing.JLabel;
@@ -13,10 +12,8 @@ import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.ListModel;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
-import javax.swing.event.ListDataListener;
 
 import lobby.LobbyState.Room;
 
@@ -27,6 +24,7 @@ import lobby.LobbyState.Room;
  * This is the actual panel that contains information about the rooms in a lobby
  * The implementation of the lobby window is under LobbyWindow
  */
+@SuppressWarnings("serial")
 public class LobbyPanel extends JPanel implements LobbyConnectionListener {
 	private static final int VISIBLE_ROWS = 10;
 	private static final String ROOMS_AVAILABLE = "Available Rooms";

@@ -18,13 +18,11 @@ public class GameLobbyServer {
 		if (args.length != 1) {
 			System.err.println("Usage:\n\t java GameLobbyServer <hostname> <port>");
 			System.out.println("Since you did not specify, you will be prompted");
-			int portselect = -1;
 			visualMode = true;
 			String result = JOptionPane.showInputDialog("Enter the port number");
 			try{
-				portselect = Integer.parseInt(result);
+				port = Integer.parseInt(result);
 			}catch(NumberFormatException e){
-				portselect = -1;
 				System.err.println("Invalid port: "+result+", will use default port: "+DEFAULT_PORT);
 			}
 			

@@ -20,8 +20,8 @@ import javax.swing.WindowConstants;
  * Each panel that the lobby window consists of is capable of interacting directly with the
  * connectionBean, 
  */
+@SuppressWarnings("serial")
 public class LobbyWindow extends JFrame implements LobbyConnectionListener, Runnable{
-	private ConnectionBean connectionBean;
 	static final long THREAD_SLEEP_TIME = 50;
 	RoomPanel roomPanel;
 	LobbyPanel lobbyPanel;

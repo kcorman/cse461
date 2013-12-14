@@ -12,6 +12,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
+@SuppressWarnings("serial")
 public class ConnectPanel extends JPanel implements LobbyConnectionListener{
 	private static final String HOST_STR = "Hostname";
 	private static final String PORT_STR = "Port";

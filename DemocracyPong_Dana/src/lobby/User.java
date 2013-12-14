@@ -2,7 +2,6 @@ package lobby;
 
 import game.server.GamePlayer;
 
-import java.io.BufferedReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;

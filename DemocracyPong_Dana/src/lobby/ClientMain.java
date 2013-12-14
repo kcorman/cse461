@@ -13,6 +13,7 @@ public class ClientMain {
 		//JOptionPane op = new JOptionPane();
 		
 		ConnectionBean bean = new GameLobbyClient();
+		@SuppressWarnings("unused")
 		LobbyWindow lobby = new LobbyWindow(bean);
 		
 	}

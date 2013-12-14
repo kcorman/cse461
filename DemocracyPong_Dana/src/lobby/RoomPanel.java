@@ -5,12 +5,10 @@ import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.List;
 
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JList;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
@@ -19,6 +17,7 @@ import javax.swing.SwingConstants;
 import lobby.LobbyState.Room;
 
 
+@SuppressWarnings("serial")
 public class RoomPanel extends JPanel implements LobbyConnectionListener{
 	private static final int VISIBLE_ROWS = 10;
 	private static final String PLAYERS_IN_ROOM = "Players in Room ";
@@ -28,16 +27,13 @@ public class RoomPanel extends JPanel implements LobbyConnectionListener{
 	private ConnectionBean connectionBean;
 	private boolean isInRoom = false;
 	
-	private String uid;
 	private JLabel roomTitle;
-	private String roomNum;
 	private JList<String> playerList;
 	JButton leaveButton = new JButton(LEAVE_ROOM);
 	JButton startButton = new JButton(START_GAME);
 	//Label used for displaying that we're not connected
 	private final JLabel notConnectedLabel = new JLabel("Not connected");
 	private final JLabel notInRoom = new JLabel("You are not in a room");
-	private JLabel roomNameLabel;
 	private JScrollPane listPane;
 	
 	public RoomPanel(ConnectionBean connectionBean) {

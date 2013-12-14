@@ -1,18 +1,14 @@
 package lobby;
 
 import game.client.GameClientConnection;
-import game.client.GameClientMockConnection;
 import game.client.GameClientModel;
 import game.client.GameClientNetworkConnection;
 import game.client.GameClientWindow;
 
 import java.io.DataInputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.Socket;
 import java.net.UnknownHostException;
-import java.nio.ByteBuffer;
-import java.nio.CharBuffer;
 
 /**
  * 
